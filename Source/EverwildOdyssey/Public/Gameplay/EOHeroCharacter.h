@@ -6,6 +6,7 @@
 
 class UCameraComponent;
 class UEOAbilityRuntimeComponent;
+class UEOCompanionRosterComponent;
 class UEOCombatStatsComponent;
 class UEOHeroProgressionComponent;
 class UEOInventoryComponent;
@@ -30,6 +31,7 @@ public:
 
     UEOCombatStatsComponent* GetCombatStatsComponent() const { return CombatStats; }
     UEOAbilityRuntimeComponent* GetAbilityRuntimeComponent() const { return AbilityRuntime; }
+    UEOCompanionRosterComponent* GetCompanionRosterComponent() const { return CompanionRoster; }
     UEOHeroProgressionComponent* GetProgressionComponent() const { return Progression; }
     UEOInventoryComponent* GetInventoryComponent() const { return Inventory; }
     UEOQuestLogComponent* GetQuestLogComponent() const { return QuestLog; }
@@ -59,6 +61,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Progression")
     TObjectPtr<UEOHeroProgressionComponent> Progression;
+
+    UPROPERTY(VisibleAnywhere, Category = "Progression")
+    TObjectPtr<UEOCompanionRosterComponent> CompanionRoster;
 
     UPROPERTY(VisibleAnywhere, Category = "Progression")
     TObjectPtr<UEOInventoryComponent> Inventory;

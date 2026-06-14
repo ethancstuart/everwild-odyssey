@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Gameplay/EOAbilityRuntimeComponent.h"
+#include "Gameplay/EOCompanionRosterComponent.h"
 #include "Gameplay/EOCombatResolution.h"
 #include "Gameplay/EOCombatStatsComponent.h"
 #include "Gameplay/EOEnemyCharacter.h"
@@ -62,6 +63,7 @@ AEOHeroCharacter::AEOHeroCharacter()
     AbilityRuntime = CreateDefaultSubobject<UEOAbilityRuntimeComponent>(TEXT("AbilityRuntime"));
     QuestLog = CreateDefaultSubobject<UEOQuestLogComponent>(TEXT("QuestLog"));
     Progression = CreateDefaultSubobject<UEOHeroProgressionComponent>(TEXT("Progression"));
+    CompanionRoster = CreateDefaultSubobject<UEOCompanionRosterComponent>(TEXT("CompanionRoster"));
     Inventory = CreateDefaultSubobject<UEOInventoryComponent>(TEXT("Inventory"));
 }
 
@@ -101,6 +103,25 @@ void AEOHeroCharacter::BeginPlay()
 
     Inventory->AddItem(TrainingBlade);
     Inventory->EquipItem(TrainingBlade.ItemId);
+
+    FEOCompanionProfile Mira;
+    Mira.CompanionId = TEXT("companion.mira");
+    Mira.DisplayName = FText::FromString(TEXT("Mira of the Dawnwatch"));
+    Mira.Role = EEOPartyRole::Support;
+    Mira.FollowDistance = 320.0f;
+    Mira.AbilityCheckInterval = 1.0f;
+
+    FEOCompanionProfile Tor;
+    Tor.CompanionId = TEXT("companion.tor");
+    Tor.DisplayName = FText::FromString(TEXT("Tor Valeguard"));
+    Tor.Role = EEOPartyRole::Defender;
+    Tor.FollowDistance = 380.0f;
+    Tor.AbilityCheckInterval = 1.4f;
+
+    CompanionRoster->AddCompanion(Mira);
+    CompanionRoster->AddCompanion(Tor);
+    CompanionRoster->ActivateCompanion(Mira.CompanionId);
+    CompanionRoster->ActivateCompanion(Tor.CompanionId);
 }
 
 void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
