@@ -1,0 +1,4 @@
+#include "EverwildOdyssey.h"
+#include "Modules/ModuleManager.h"
+
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, EverwildOdyssey, "EverwildOdyssey");
