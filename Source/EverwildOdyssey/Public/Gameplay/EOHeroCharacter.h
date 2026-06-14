@@ -7,6 +7,7 @@
 class UCameraComponent;
 class UEOAbilityRuntimeComponent;
 class UEOCombatStatsComponent;
+class UEOInventoryComponent;
 class UEOQuestLogComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
@@ -25,6 +26,7 @@ public:
 
     UEOCombatStatsComponent* GetCombatStatsComponent() const { return CombatStats; }
     UEOAbilityRuntimeComponent* GetAbilityRuntimeComponent() const { return AbilityRuntime; }
+    UEOInventoryComponent* GetInventoryComponent() const { return Inventory; }
     UEOQuestLogComponent* GetQuestLogComponent() const { return QuestLog; }
 
 protected:
@@ -49,6 +51,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Progression")
     TObjectPtr<UEOQuestLogComponent> QuestLog;
+
+    UPROPERTY(VisibleAnywhere, Category = "Progression")
+    TObjectPtr<UEOInventoryComponent> Inventory;
 
     void MoveForward(float Value);
     void MoveRight(float Value);

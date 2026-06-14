@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Gameplay/EOAbilityRuntimeComponent.h"
 #include "Gameplay/EOCombatStatsComponent.h"
+#include "Gameplay/EOInventoryComponent.h"
 #include "Gameplay/EOQuestLogComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -56,6 +57,7 @@ AEOHeroCharacter::AEOHeroCharacter()
     CombatStats = CreateDefaultSubobject<UEOCombatStatsComponent>(TEXT("CombatStats"));
     AbilityRuntime = CreateDefaultSubobject<UEOAbilityRuntimeComponent>(TEXT("AbilityRuntime"));
     QuestLog = CreateDefaultSubobject<UEOQuestLogComponent>(TEXT("QuestLog"));
+    Inventory = CreateDefaultSubobject<UEOInventoryComponent>(TEXT("Inventory"));
 }
 
 void AEOHeroCharacter::BeginPlay()
@@ -84,6 +86,16 @@ void AEOHeroCharacter::BeginPlay()
 
     QuestLog->InitializeQuests({ ArrivalQuest });
     QuestLog->InitializeWorldEvents({ RelicSurge });
+
+    FEOGearItem TrainingBlade;
+    TrainingBlade.ItemId = TEXT("weapon.dawnwatch_training_blade");
+    TrainingBlade.DisplayName = FText::FromString(TEXT("Dawnwatch Training Blade"));
+    TrainingBlade.Slot = EEOGearSlot::Weapon;
+    TrainingBlade.Rarity = EEOGearRarity::Common;
+    TrainingBlade.Power = 4;
+
+    Inventory->AddItem(TrainingBlade);
+    Inventory->EquipItem(TrainingBlade.ItemId);
 }
 
 void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
