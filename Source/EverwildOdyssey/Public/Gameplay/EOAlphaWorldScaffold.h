@@ -25,13 +25,17 @@ struct FEOAlphaLandmarkSpec
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Alpha World")
     FVector Scale = FVector::OneVector;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Alpha World")
+    FLinearColor TintColor = FLinearColor::White;
+
     bool IsValidForAlpha() const
     {
         return !LandmarkId.IsNone()
             && !DisplayName.IsEmpty()
             && Scale.X > 0.0f
             && Scale.Y > 0.0f
-            && Scale.Z > 0.0f;
+            && Scale.Z > 0.0f
+            && TintColor.A > 0.0f;
     }
 };
 

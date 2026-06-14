@@ -16,6 +16,7 @@
 #include "Gameplay/EOInventoryComponent.h"
 #include "Gameplay/EOQuestLogComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
 AEOHeroCharacter::AEOHeroCharacter()
@@ -54,9 +55,16 @@ AEOHeroCharacter::AEOHeroCharacter()
     HeroSilhouette->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> CylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> BasicShapeMaterial(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
     if (CylinderMesh.Succeeded())
     {
         HeroSilhouette->SetStaticMesh(CylinderMesh.Object);
+        if (BasicShapeMaterial.Succeeded())
+        {
+            UMaterialInstanceDynamic* HeroMaterial = UMaterialInstanceDynamic::Create(BasicShapeMaterial.Object, HeroSilhouette);
+            HeroMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.12f, 0.54f, 1.0f, 1.0f));
+            HeroSilhouette->SetMaterial(0, HeroMaterial);
+        }
     }
 
     CombatStats = CreateDefaultSubobject<UEOCombatStatsComponent>(TEXT("CombatStats"));

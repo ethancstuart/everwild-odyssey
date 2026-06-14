@@ -15,6 +15,7 @@ bool FEOAlphaWorldScaffoldTest::RunTest(const FString& Parameters)
     for (const FEOAlphaLandmarkSpec& Landmark : Landmarks)
     {
         TestTrue(TEXT("Each alpha landmark is valid."), Landmark.IsValidForAlpha());
+        TestTrue(TEXT("Each alpha landmark has a readable tint."), Landmark.TintColor.A > 0.95f && Landmark.TintColor != FLinearColor::White);
         LandmarkIds.Add(Landmark.LandmarkId);
     }
 

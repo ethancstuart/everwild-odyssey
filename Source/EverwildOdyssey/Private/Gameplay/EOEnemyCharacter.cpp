@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Gameplay/EOCombatStatsComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
 AEOEnemyCharacter::AEOEnemyCharacter()
@@ -26,9 +27,16 @@ AEOEnemyCharacter::AEOEnemyCharacter()
     EnemySilhouette->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> BasicShapeMaterial(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
     if (SphereMesh.Succeeded())
     {
         EnemySilhouette->SetStaticMesh(SphereMesh.Object);
+        if (BasicShapeMaterial.Succeeded())
+        {
+            UMaterialInstanceDynamic* EnemyMaterial = UMaterialInstanceDynamic::Create(BasicShapeMaterial.Object, EnemySilhouette);
+            EnemyMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.0f, 0.22f, 0.34f, 1.0f));
+            EnemySilhouette->SetMaterial(0, EnemyMaterial);
+        }
     }
 
     InitializeFromArchetype(BuildRelicWispArchetype());

@@ -1,6 +1,6 @@
 {
   "FileVersion": 3,
-  "EngineAssociation": "",
+  "EngineAssociation": "5.7",
   "Category": "Games",
   "Description": "A heroic high-fantasy C++ action RPG foundation for a single-player MMO-scale vertical slice.",
   "Modules": [

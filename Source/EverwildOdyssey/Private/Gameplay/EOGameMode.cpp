@@ -22,11 +22,7 @@ void AEOGameMode::BeginPlay()
         World->SpawnActor<AEOAlphaWorldScaffold>(AEOAlphaWorldScaffold::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 
         const FEOEnemyArchetype RelicWispArchetype = AEOEnemyCharacter::BuildRelicWispArchetype();
-        const FVector SpawnLocations[] = {
-            FVector(460.0f, -40.0f, 96.0f),
-            FVector(620.0f, -130.0f, 96.0f),
-            FVector(520.0f, -280.0f, 96.0f)
-        };
+        const TArray<FVector> SpawnLocations = BuildOpeningEnemySpawnLocations();
 
         for (const FVector& SpawnLocation : SpawnLocations)
         {
@@ -36,4 +32,16 @@ void AEOGameMode::BeginPlay()
             }
         }
     }
+}
+
+TArray<FVector> AEOGameMode::BuildOpeningEnemySpawnLocations()
+{
+    TArray<FVector> SpawnLocations;
+    SpawnLocations.Reserve(ExpectedOpeningEnemyCount);
+
+    SpawnLocations.Add(FVector(210.0f, -35.0f, 96.0f));
+    SpawnLocations.Add(FVector(340.0f, -120.0f, 96.0f));
+    SpawnLocations.Add(FVector(500.0f, -220.0f, 96.0f));
+
+    return SpawnLocations;
 }
