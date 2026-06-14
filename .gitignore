@@ -3,12 +3,40 @@
 .env.*
 !.env.example
 
+# Local brainstorming/visual companion artifacts.
+.superpowers/
+.worktrees
+.worktrees/
+
+# Node/web tooling if support scripts are added later.
 node_modules/
 dist/
 build/
 .next/
 coverage/
 
-.superpowers/
-.worktrees
-.worktrees/
+# Unreal generated files.
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+.vs/
+.vscode/
+.idea/
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.suo
+*.xcodeproj
+*.xcworkspace
+
+# Local-only Unreal and Marketplace content.
+Content/LocalOnly/
+Content/Marketplace/
+Plugins/Marketplace/
+
+# Packaged builds.
+Releases/
+PackagedBuilds/
