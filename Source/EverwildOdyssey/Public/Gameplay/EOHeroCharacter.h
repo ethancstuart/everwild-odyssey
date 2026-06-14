@@ -7,6 +7,7 @@
 class UCameraComponent;
 class UEOAbilityRuntimeComponent;
 class UEOCombatStatsComponent;
+class UEOQuestLogComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
 
@@ -24,6 +25,7 @@ public:
 
     UEOCombatStatsComponent* GetCombatStatsComponent() const { return CombatStats; }
     UEOAbilityRuntimeComponent* GetAbilityRuntimeComponent() const { return AbilityRuntime; }
+    UEOQuestLogComponent* GetQuestLogComponent() const { return QuestLog; }
 
 protected:
     virtual void BeginPlay() override;
@@ -44,6 +46,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     TObjectPtr<UEOAbilityRuntimeComponent> AbilityRuntime;
+
+    UPROPERTY(VisibleAnywhere, Category = "Progression")
+    TObjectPtr<UEOQuestLogComponent> QuestLog;
 
     void MoveForward(float Value);
     void MoveRight(float Value);

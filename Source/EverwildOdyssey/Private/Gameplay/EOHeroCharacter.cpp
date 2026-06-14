@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Gameplay/EOAbilityRuntimeComponent.h"
 #include "Gameplay/EOCombatStatsComponent.h"
+#include "Gameplay/EOQuestLogComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
 AEOHeroCharacter::AEOHeroCharacter()
@@ -54,6 +55,7 @@ AEOHeroCharacter::AEOHeroCharacter()
 
     CombatStats = CreateDefaultSubobject<UEOCombatStatsComponent>(TEXT("CombatStats"));
     AbilityRuntime = CreateDefaultSubobject<UEOAbilityRuntimeComponent>(TEXT("AbilityRuntime"));
+    QuestLog = CreateDefaultSubobject<UEOQuestLogComponent>(TEXT("QuestLog"));
 }
 
 void AEOHeroCharacter::BeginPlay()
@@ -67,6 +69,21 @@ void AEOHeroCharacter::BeginPlay()
         AbilityRuntime->InitializeAbilities(DefaultClass.StartingAbilities);
         GetCharacterMovement()->MaxWalkSpeed = DefaultClass.BaseStats.MoveSpeed;
     }
+
+    FEOQuestRecord ArrivalQuest;
+    ArrivalQuest.QuestId = TEXT("dawnwatch.starfall_arrival");
+    ArrivalQuest.DisplayName = FText::FromString(TEXT("The Starfall Gate"));
+    ArrivalQuest.State = EEOQuestState::Available;
+    ArrivalQuest.ReportedToFaction = EEOFaction::DawnwatchCommand;
+
+    FEOWorldEventRecord RelicSurge;
+    RelicSurge.EventId = TEXT("starfall.relic_surge");
+    RelicSurge.DisplayName = FText::FromString(TEXT("Relic Surge"));
+    RelicSurge.State = EEOWorldEventState::Warning;
+    RelicSurge.RespawnSeconds = 180.0f;
+
+    QuestLog->InitializeQuests({ ArrivalQuest });
+    QuestLog->InitializeWorldEvents({ RelicSurge });
 }
 
 void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -125,7 +142,8 @@ void AEOHeroCharacter::BlockReleased()
 
 void AEOHeroCharacter::Interact()
 {
-    UE_LOG(LogTemp, Log, TEXT("Everwild hero interact"));
+    const EEOQuestActionResult Result = QuestLog->StartQuest(TEXT("dawnwatch.starfall_arrival"));
+    UE_LOG(LogTemp, Log, TEXT("Everwild hero interact quest result: %s"), *UEnum::GetValueAsString(Result));
 }
 
 void AEOHeroCharacter::AbilityOne()
