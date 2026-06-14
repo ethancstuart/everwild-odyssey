@@ -19,7 +19,7 @@ Everwild Odyssey is an original heroic high-fantasy Unreal Engine C++ project. T
 4. Generate project files if Unreal prompts for them.
 5. Build the editor target.
 
-Detailed macOS setup notes live in `Docs/setup-unreal-macos.md`.
+Detailed macOS setup notes live in `docs/setup-unreal-macos.md`.
 
 ## Design Docs
 

@@ -1265,7 +1265,7 @@ Expected: commit succeeds.
 **Files:**
 
 - Create: `/Users/ethanstuart/Projects/everwild-odyssey/Scripts/check-unreal.sh`
-- Create: `/Users/ethanstuart/Projects/everwild-odyssey/Docs/setup-unreal-macos.md`
+- Create: `/Users/ethanstuart/Projects/everwild-odyssey/docs/setup-unreal-macos.md`
 
 - [ ] **Step 1: Create setup script**
 
@@ -1340,7 +1340,7 @@ Expected: command exits successfully.
 
 - [ ] **Step 3: Create macOS Unreal setup doc**
 
-Create `Docs/setup-unreal-macos.md`:
+Create `docs/setup-unreal-macos.md`:
 
 ```markdown
 # Unreal Setup On macOS
@@ -1396,7 +1396,7 @@ Expected: script prints Xcode/clang details, reports Unreal not found until inst
 Run:
 
 ```bash
-git add Scripts/check-unreal.sh Docs/setup-unreal-macos.md
+git add Scripts/check-unreal.sh docs/setup-unreal-macos.md
 git commit -m "docs: add Unreal setup checks"
 ```
 
