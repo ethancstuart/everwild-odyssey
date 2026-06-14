@@ -10,4 +10,5 @@ build/
 coverage/
 
 .superpowers/
+.worktrees
 .worktrees/
