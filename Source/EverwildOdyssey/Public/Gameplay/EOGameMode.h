@@ -11,4 +11,7 @@ class EVERWILDODYSSEY_API AEOGameMode : public AGameModeBase
 
 public:
     AEOGameMode();
+
+protected:
+    virtual void BeginPlay() override;
 };
