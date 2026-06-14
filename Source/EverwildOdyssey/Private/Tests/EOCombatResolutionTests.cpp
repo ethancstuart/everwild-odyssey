@@ -15,6 +15,11 @@ bool FEOCombatResolutionTest::RunTest(const FString& Parameters)
     Stats.AttackPower = -10.0f;
     TestEqual(TEXT("Basic attack clamps weak inputs to damage floor."), FEOCombatResolution::CalculateBasicAttackDamage(Stats, -5), 5.0f);
 
+    Stats.AttackPower = 16.0f;
+    Stats.SpellPower = 8.0f;
+    TestEqual(TEXT("Ability damage mixes martial and spell scaling."), FEOCombatResolution::CalculateAbilityDamage(Stats, 4, false), 39.0f);
+    TestEqual(TEXT("Ultimate ability damage gets a larger floor and bonus."), FEOCombatResolution::CalculateAbilityDamage(Stats, 4, true), 64.0f);
+
     return true;
 }
 

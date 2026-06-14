@@ -176,6 +176,27 @@ AEOEnemyCharacter* AEOHeroCharacter::FindNearestEnemyInRange(float Range) const
     return BestEnemy;
 }
 
+void AEOHeroCharacter::ActivateAbilityAndDamageNearestEnemy(int32 AbilityIndex, bool bUltimate)
+{
+    const EEOAbilityActivationResult Result = AbilityRuntime->TryActivateAbilityByIndex(AbilityIndex, CombatStats);
+    if (Result != EEOAbilityActivationResult::Activated)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Everwild hero ability failed: %s"), *UEnum::GetValueAsString(Result));
+        return;
+    }
+
+    AEOEnemyCharacter* Target = FindNearestEnemyInRange(DefaultAbilityAttackRange);
+    if (Target == nullptr)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Everwild hero ability activated but found no enemy in range"));
+        return;
+    }
+
+    const float RawDamage = FEOCombatResolution::CalculateAbilityDamage(CombatStats->GetStats(), Inventory->GetTotalEquippedPower(), bUltimate);
+    const float AppliedDamage = Target->ApplyIncomingHit(RawDamage);
+    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability hit %s for %.1f"), *Target->GetEnemyId().ToString(), AppliedDamage);
+}
+
 void AEOHeroCharacter::Dodge()
 {
     LaunchCharacter(GetActorForwardVector() * 420.0f, true, false);
@@ -199,12 +220,10 @@ void AEOHeroCharacter::Interact()
 
 void AEOHeroCharacter::AbilityOne()
 {
-    const EEOAbilityActivationResult Result = AbilityRuntime->TryActivateAbilityByIndex(2, CombatStats);
-    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability one: %s"), *UEnum::GetValueAsString(Result));
+    ActivateAbilityAndDamageNearestEnemy(2, false);
 }
 
 void AEOHeroCharacter::AbilityTwo()
 {
-    const EEOAbilityActivationResult Result = AbilityRuntime->TryActivateAbilityByIndex(3, CombatStats);
-    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability two: %s"), *UEnum::GetValueAsString(Result));
+    ActivateAbilityAndDamageNearestEnemy(3, false);
 }
