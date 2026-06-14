@@ -19,7 +19,7 @@ At plan creation time, the machine had:
 3. Open `EverwildOdyssey.uproject`.
 4. Let Unreal generate project files when prompted.
 5. Build the `EverwildOdysseyEditor` target.
-6. Run `Scripts/check-unreal.sh` from the project root after installation.
+6. Run `Scripts/check-unreal.sh` from the project root after installation. The script should report both the Epic Games Launcher and an Unreal Engine installation path before build verification can continue.
 
 ## Git LFS
 

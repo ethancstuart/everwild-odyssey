@@ -1419,7 +1419,7 @@ Scripts/check-unreal.sh
 
 Expected if Unreal is not installed: script reports no local Unreal/Epic install found and exits successfully. Stop this task until Unreal is installed.
 
-Expected if Unreal is installed: script prints at least one found Unreal/Epic path.
+Expected if Unreal is installed: script prints an Epic Games Launcher path and an Unreal Engine installation path.
 
 - [ ] **Step 2: Generate project files from Unreal**
 
