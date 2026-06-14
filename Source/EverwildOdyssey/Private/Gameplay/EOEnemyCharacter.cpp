@@ -61,6 +61,7 @@ void AEOEnemyCharacter::InitializeFromArchetype(const FEOEnemyArchetype& Archety
     EnemyId = Archetype.EnemyId;
     ExperienceReward = Archetype.ExperienceReward;
     ThreatRadius = Archetype.ThreatRadius;
+    bExperienceRewardClaimed = false;
     CombatStats->InitializeFromStats(Archetype.BaseStats);
     GetCharacterMovement()->MaxWalkSpeed = Archetype.BaseStats.MoveSpeed;
 }
@@ -68,4 +69,15 @@ void AEOEnemyCharacter::InitializeFromArchetype(const FEOEnemyArchetype& Archety
 float AEOEnemyCharacter::ApplyIncomingHit(float RawDamage)
 {
     return CombatStats->ApplyDamage(RawDamage);
+}
+
+int32 AEOEnemyCharacter::ClaimExperienceReward()
+{
+    if (bExperienceRewardClaimed || CombatStats->IsAlive())
+    {
+        return 0;
+    }
+
+    bExperienceRewardClaimed = true;
+    return ExperienceReward;
 }

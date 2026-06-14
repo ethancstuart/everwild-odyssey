@@ -7,6 +7,7 @@
 class UCameraComponent;
 class UEOAbilityRuntimeComponent;
 class UEOCombatStatsComponent;
+class UEOHeroProgressionComponent;
 class UEOInventoryComponent;
 class UEOQuestLogComponent;
 class USpringArmComponent;
@@ -29,6 +30,7 @@ public:
 
     UEOCombatStatsComponent* GetCombatStatsComponent() const { return CombatStats; }
     UEOAbilityRuntimeComponent* GetAbilityRuntimeComponent() const { return AbilityRuntime; }
+    UEOHeroProgressionComponent* GetProgressionComponent() const { return Progression; }
     UEOInventoryComponent* GetInventoryComponent() const { return Inventory; }
     UEOQuestLogComponent* GetQuestLogComponent() const { return QuestLog; }
 
@@ -56,6 +58,9 @@ private:
     TObjectPtr<UEOQuestLogComponent> QuestLog;
 
     UPROPERTY(VisibleAnywhere, Category = "Progression")
+    TObjectPtr<UEOHeroProgressionComponent> Progression;
+
+    UPROPERTY(VisibleAnywhere, Category = "Progression")
     TObjectPtr<UEOInventoryComponent> Inventory;
 
     void MoveForward(float Value);
@@ -63,6 +68,7 @@ private:
     void BasicAttack();
     AEOEnemyCharacter* FindNearestEnemyInRange(float Range) const;
     void ActivateAbilityAndDamageNearestEnemy(int32 AbilityIndex, bool bUltimate);
+    void AwardEnemyIfDefeated(AEOEnemyCharacter* Enemy);
     void Dodge();
     void BlockPressed();
     void BlockReleased();

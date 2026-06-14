@@ -57,6 +57,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Enemy")
     float ApplyIncomingHit(float RawDamage);
 
+    UFUNCTION(BlueprintCallable, Category = "Enemy")
+    int32 ClaimExperienceReward();
+
     UFUNCTION(BlueprintPure, Category = "Enemy")
     UEOCombatStatsComponent* GetCombatStatsComponent() const { return CombatStats; }
 
@@ -84,4 +87,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Enemy")
     float ThreatRadius = 800.0f;
+
+    UPROPERTY(VisibleAnywhere, Category = "Enemy")
+    bool bExperienceRewardClaimed = false;
 };

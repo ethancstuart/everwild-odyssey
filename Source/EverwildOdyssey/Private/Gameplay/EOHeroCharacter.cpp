@@ -11,6 +11,7 @@
 #include "Gameplay/EOCombatResolution.h"
 #include "Gameplay/EOCombatStatsComponent.h"
 #include "Gameplay/EOEnemyCharacter.h"
+#include "Gameplay/EOHeroProgressionComponent.h"
 #include "Gameplay/EOInventoryComponent.h"
 #include "Gameplay/EOQuestLogComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -60,6 +61,7 @@ AEOHeroCharacter::AEOHeroCharacter()
     CombatStats = CreateDefaultSubobject<UEOCombatStatsComponent>(TEXT("CombatStats"));
     AbilityRuntime = CreateDefaultSubobject<UEOAbilityRuntimeComponent>(TEXT("AbilityRuntime"));
     QuestLog = CreateDefaultSubobject<UEOQuestLogComponent>(TEXT("QuestLog"));
+    Progression = CreateDefaultSubobject<UEOHeroProgressionComponent>(TEXT("Progression"));
     Inventory = CreateDefaultSubobject<UEOInventoryComponent>(TEXT("Inventory"));
 }
 
@@ -147,6 +149,7 @@ void AEOHeroCharacter::BasicAttack()
     const float RawDamage = FEOCombatResolution::CalculateBasicAttackDamage(CombatStats->GetStats(), Inventory->GetTotalEquippedPower());
     const float AppliedDamage = Target->ApplyIncomingHit(RawDamage);
     UE_LOG(LogTemp, Log, TEXT("Everwild hero basic attack hit %s for %.1f"), *Target->GetEnemyId().ToString(), AppliedDamage);
+    AwardEnemyIfDefeated(Target);
 }
 
 AEOEnemyCharacter* AEOHeroCharacter::FindNearestEnemyInRange(float Range) const
@@ -195,6 +198,22 @@ void AEOHeroCharacter::ActivateAbilityAndDamageNearestEnemy(int32 AbilityIndex, 
     const float RawDamage = FEOCombatResolution::CalculateAbilityDamage(CombatStats->GetStats(), Inventory->GetTotalEquippedPower(), bUltimate);
     const float AppliedDamage = Target->ApplyIncomingHit(RawDamage);
     UE_LOG(LogTemp, Log, TEXT("Everwild hero ability hit %s for %.1f"), *Target->GetEnemyId().ToString(), AppliedDamage);
+    AwardEnemyIfDefeated(Target);
+}
+
+void AEOHeroCharacter::AwardEnemyIfDefeated(AEOEnemyCharacter* Enemy)
+{
+    if (Enemy == nullptr)
+    {
+        return;
+    }
+
+    const int32 Reward = Enemy->ClaimExperienceReward();
+    if (Reward > 0)
+    {
+        const EEOProgressionResult Result = Progression->AddExperience(Reward);
+        UE_LOG(LogTemp, Log, TEXT("Everwild hero gained %d XP: %s"), Reward, *UEnum::GetValueAsString(Result));
+    }
 }
 
 void AEOHeroCharacter::Dodge()
