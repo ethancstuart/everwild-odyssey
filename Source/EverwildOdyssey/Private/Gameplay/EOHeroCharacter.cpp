@@ -4,8 +4,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Core/EOHeroClassDefinition.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Gameplay/EOAbilityRuntimeComponent.h"
 #include "Gameplay/EOCombatStatsComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -51,6 +53,20 @@ AEOHeroCharacter::AEOHeroCharacter()
     }
 
     CombatStats = CreateDefaultSubobject<UEOCombatStatsComponent>(TEXT("CombatStats"));
+    AbilityRuntime = CreateDefaultSubobject<UEOAbilityRuntimeComponent>(TEXT("AbilityRuntime"));
+}
+
+void AEOHeroCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+
+    FEOHeroClassDefinition DefaultClass;
+    if (FEOWildClassCatalog::TryGetClassDefinition(EEOHeroClass::Runeblade, DefaultClass))
+    {
+        CombatStats->InitializeFromStats(DefaultClass.BaseStats);
+        AbilityRuntime->InitializeAbilities(DefaultClass.StartingAbilities);
+        GetCharacterMovement()->MaxWalkSpeed = DefaultClass.BaseStats.MoveSpeed;
+    }
 }
 
 void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -114,10 +130,12 @@ void AEOHeroCharacter::Interact()
 
 void AEOHeroCharacter::AbilityOne()
 {
-    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability one"));
+    const EEOAbilityActivationResult Result = AbilityRuntime->TryActivateAbilityByIndex(2, CombatStats);
+    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability one: %s"), *UEnum::GetValueAsString(Result));
 }
 
 void AEOHeroCharacter::AbilityTwo()
 {
-    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability two"));
+    const EEOAbilityActivationResult Result = AbilityRuntime->TryActivateAbilityByIndex(3, CombatStats);
+    UE_LOG(LogTemp, Log, TEXT("Everwild hero ability two: %s"), *UEnum::GetValueAsString(Result));
 }

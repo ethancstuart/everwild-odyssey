@@ -5,6 +5,7 @@
 #include "EOHeroCharacter.generated.h"
 
 class UCameraComponent;
+class UEOAbilityRuntimeComponent;
 class UEOCombatStatsComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
@@ -21,7 +22,11 @@ public:
 
     AEOHeroCharacter();
 
+    UEOCombatStatsComponent* GetCombatStatsComponent() const { return CombatStats; }
+    UEOAbilityRuntimeComponent* GetAbilityRuntimeComponent() const { return AbilityRuntime; }
+
 protected:
+    virtual void BeginPlay() override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
@@ -36,6 +41,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     TObjectPtr<UEOCombatStatsComponent> CombatStats;
+
+    UPROPERTY(VisibleAnywhere, Category = "Combat")
+    TObjectPtr<UEOAbilityRuntimeComponent> AbilityRuntime;
 
     void MoveForward(float Value);
     void MoveRight(float Value);
