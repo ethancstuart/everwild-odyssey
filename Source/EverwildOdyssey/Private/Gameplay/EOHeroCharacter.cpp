@@ -8,9 +8,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Gameplay/EOAbilityRuntimeComponent.h"
+#include "Gameplay/EOCombatResolution.h"
 #include "Gameplay/EOCombatStatsComponent.h"
+#include "Gameplay/EOEnemyCharacter.h"
 #include "Gameplay/EOInventoryComponent.h"
 #include "Gameplay/EOQuestLogComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
 
 AEOHeroCharacter::AEOHeroCharacter()
@@ -134,7 +137,43 @@ void AEOHeroCharacter::MoveRight(float Value)
 
 void AEOHeroCharacter::BasicAttack()
 {
-    UE_LOG(LogTemp, Log, TEXT("Everwild hero basic attack"));
+    AEOEnemyCharacter* Target = FindNearestEnemyInRange(DefaultBasicAttackRange);
+    if (Target == nullptr)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Everwild hero basic attack missed: no enemy in range"));
+        return;
+    }
+
+    const float RawDamage = FEOCombatResolution::CalculateBasicAttackDamage(CombatStats->GetStats(), Inventory->GetTotalEquippedPower());
+    const float AppliedDamage = Target->ApplyIncomingHit(RawDamage);
+    UE_LOG(LogTemp, Log, TEXT("Everwild hero basic attack hit %s for %.1f"), *Target->GetEnemyId().ToString(), AppliedDamage);
+}
+
+AEOEnemyCharacter* AEOHeroCharacter::FindNearestEnemyInRange(float Range) const
+{
+    TArray<AActor*> EnemyActors;
+    UGameplayStatics::GetAllActorsOfClass(this, AEOEnemyCharacter::StaticClass(), EnemyActors);
+
+    AEOEnemyCharacter* BestEnemy = nullptr;
+    float BestDistanceSquared = FMath::Square(FMath::Max(0.0f, Range));
+
+    for (AActor* EnemyActor : EnemyActors)
+    {
+        AEOEnemyCharacter* Enemy = Cast<AEOEnemyCharacter>(EnemyActor);
+        if (Enemy == nullptr || Enemy->GetCombatStatsComponent() == nullptr || !Enemy->GetCombatStatsComponent()->IsAlive())
+        {
+            continue;
+        }
+
+        const float DistanceSquared = FVector::DistSquared(GetActorLocation(), Enemy->GetActorLocation());
+        if (DistanceSquared <= BestDistanceSquared)
+        {
+            BestDistanceSquared = DistanceSquared;
+            BestEnemy = Enemy;
+        }
+    }
+
+    return BestEnemy;
 }
 
 void AEOHeroCharacter::Dodge()

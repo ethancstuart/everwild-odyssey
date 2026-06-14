@@ -11,6 +11,7 @@ class UEOInventoryComponent;
 class UEOQuestLogComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
+class AEOEnemyCharacter;
 
 UCLASS()
 class EVERWILDODYSSEY_API AEOHeroCharacter : public ACharacter
@@ -21,6 +22,7 @@ public:
     static constexpr float DefaultCameraBoomLength = 1200.0f;
     static constexpr float DefaultCameraPitch = -60.0f;
     static constexpr float DefaultCameraYaw = -45.0f;
+    static constexpr float DefaultBasicAttackRange = 260.0f;
 
     AEOHeroCharacter();
 
@@ -58,6 +60,7 @@ private:
     void MoveForward(float Value);
     void MoveRight(float Value);
     void BasicAttack();
+    AEOEnemyCharacter* FindNearestEnemyInRange(float Range) const;
     void Dodge();
     void BlockPressed();
     void BlockReleased();
