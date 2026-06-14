@@ -5,6 +5,7 @@
 #include "EOAlphaWorldScaffold.generated.h"
 
 class USceneComponent;
+class UEOEncounterDirectorComponent;
 class UStaticMeshComponent;
 
 USTRUCT(BlueprintType)
@@ -46,9 +47,17 @@ public:
 
     static TArray<FEOAlphaLandmarkSpec> BuildDefaultLandmarks();
 
+    UEOEncounterDirectorComponent* GetEncounterDirectorComponent() const { return EncounterDirector; }
+
+protected:
+    virtual void BeginPlay() override;
+
 private:
     UPROPERTY(VisibleAnywhere, Category = "Alpha World")
     TObjectPtr<USceneComponent> SceneRoot;
+
+    UPROPERTY(VisibleAnywhere, Category = "Alpha World")
+    TObjectPtr<UEOEncounterDirectorComponent> EncounterDirector;
 
     UPROPERTY(VisibleAnywhere, Category = "Alpha World")
     TObjectPtr<UStaticMeshComponent> DawnwatchKeep;

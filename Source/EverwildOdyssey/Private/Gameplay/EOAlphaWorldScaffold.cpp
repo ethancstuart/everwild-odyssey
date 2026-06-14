@@ -2,6 +2,7 @@
 
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Gameplay/EOEncounterDirectorComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -31,6 +32,8 @@ AEOAlphaWorldScaffold::AEOAlphaWorldScaffold()
 
     SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("AlphaWorldRoot"));
     RootComponent = SceneRoot;
+
+    EncounterDirector = CreateDefaultSubobject<UEOEncounterDirectorComponent>(TEXT("EncounterDirector"));
 
     DawnwatchKeep = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DawnwatchKeep"));
     DawnwatchKeep->SetupAttachment(SceneRoot);
@@ -65,6 +68,21 @@ AEOAlphaWorldScaffold::AEOAlphaWorldScaffold()
         ConfigureLandmark(ValeRoad, Landmarks[4], CubeMesh.Object);
         ConfigureLandmark(SkybridgeHub, Landmarks[5], CylinderMesh.Object);
     }
+}
+
+void AEOAlphaWorldScaffold::BeginPlay()
+{
+    Super::BeginPlay();
+
+    FEOEncounterRecord RelicSurgeEncounter;
+    RelicSurgeEncounter.EncounterId = TEXT("encounter.relic_surge.wave_one");
+    RelicSurgeEncounter.DisplayName = FText::FromString(TEXT("Relic Surge: First Wave"));
+    RelicSurgeEncounter.LinkedWorldEventId = TEXT("starfall.relic_surge");
+    RelicSurgeEncounter.State = EEOEncounterState::Dormant;
+    RelicSurgeEncounter.TotalEnemies = 3;
+    RelicSurgeEncounter.RecommendedLevel = 1;
+
+    EncounterDirector->InitializeEncounters({ RelicSurgeEncounter });
 }
 
 TArray<FEOAlphaLandmarkSpec> AEOAlphaWorldScaffold::BuildDefaultLandmarks()
