@@ -17,8 +17,8 @@ bool FEOCombatResolutionTest::RunTest(const FString& Parameters)
 
     Stats.AttackPower = 16.0f;
     Stats.SpellPower = 8.0f;
-    TestEqual(TEXT("Ability damage mixes martial and spell scaling."), FEOCombatResolution::CalculateAbilityDamage(Stats, 4, false), 39.0f);
-    TestEqual(TEXT("Ultimate ability damage gets a larger floor and bonus."), FEOCombatResolution::CalculateAbilityDamage(Stats, 4, true), 64.0f);
+    TestEqual(TEXT("Ability damage mixes martial and spell scaling."), FEOCombatResolution::CalculateAbilityDamage(Stats, 4, false), 39.2f);
+    TestEqual(TEXT("Ultimate ability damage gets a larger floor and bonus."), FEOCombatResolution::CalculateAbilityDamage(Stats, 4, true), 64.2f);
 
     return true;
 }

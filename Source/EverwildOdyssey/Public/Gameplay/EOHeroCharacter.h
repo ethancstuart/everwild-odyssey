@@ -21,11 +21,12 @@ class EVERWILDODYSSEY_API AEOHeroCharacter : public ACharacter
     GENERATED_BODY()
 
 public:
-    static constexpr float DefaultCameraBoomLength = 1200.0f;
-    static constexpr float DefaultCameraPitch = -60.0f;
-    static constexpr float DefaultCameraYaw = -45.0f;
+    static constexpr float DefaultCameraBoomLength = 960.0f;
+    static constexpr float DefaultCameraPitch = -48.0f;
+    static constexpr float DefaultCameraYaw = -42.0f;
     static constexpr float DefaultBasicAttackRange = 260.0f;
     static constexpr float DefaultAbilityAttackRange = 420.0f;
+    static constexpr int32 RequiredRelicShardsForGate = 3;
 
     AEOHeroCharacter();
 
@@ -35,6 +36,9 @@ public:
     UEOHeroProgressionComponent* GetProgressionComponent() const { return Progression; }
     UEOInventoryComponent* GetInventoryComponent() const { return Inventory; }
     UEOQuestLogComponent* GetQuestLogComponent() const { return QuestLog; }
+    int32 GetRelicShardCount() const { return RelicShardCount; }
+    int32 GetRequiredRelicShardCount() const { return RequiredRelicShardsForGate; }
+    bool IsStarfallGateStabilized() const { return bStarfallGateStabilized; }
 
 protected:
     virtual void BeginPlay() override;
@@ -49,6 +53,24 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Presentation")
     TObjectPtr<UStaticMeshComponent> HeroSilhouette;
+
+    UPROPERTY(VisibleAnywhere, Category = "Presentation")
+    TObjectPtr<UStaticMeshComponent> HeroHead;
+
+    UPROPERTY(VisibleAnywhere, Category = "Presentation")
+    TObjectPtr<UStaticMeshComponent> HeroCape;
+
+    UPROPERTY(VisibleAnywhere, Category = "Presentation")
+    TObjectPtr<UStaticMeshComponent> HeroSword;
+
+    UPROPERTY(VisibleAnywhere, Category = "Presentation")
+    TObjectPtr<UStaticMeshComponent> HeroShield;
+
+    UPROPERTY(VisibleAnywhere, Category = "Presentation")
+    TObjectPtr<UStaticMeshComponent> MiraSilhouette;
+
+    UPROPERTY(VisibleAnywhere, Category = "Presentation")
+    TObjectPtr<UStaticMeshComponent> TorSilhouette;
 
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     TObjectPtr<UEOCombatStatsComponent> CombatStats;
@@ -68,6 +90,12 @@ private:
     UPROPERTY(VisibleAnywhere, Category = "Progression")
     TObjectPtr<UEOInventoryComponent> Inventory;
 
+    UPROPERTY(VisibleAnywhere, Category = "Progression")
+    int32 RelicShardCount = 0;
+
+    UPROPERTY(VisibleAnywhere, Category = "Progression")
+    bool bStarfallGateStabilized = false;
+
     void MoveForward(float Value);
     void MoveRight(float Value);
     void BasicAttack();
@@ -80,4 +108,5 @@ private:
     void Interact();
     void AbilityOne();
     void AbilityTwo();
+    void RefreshStarfallQuestProgress();
 };

@@ -20,6 +20,8 @@ bool FEOGameModeTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("Opening enemy spawns are above the floor."), SpawnLocation.Z >= 80.0f);
     }
 
+    TestTrue(TEXT("Opening encounter reads as a zone event."), AEOGameMode::ExpectedOpeningEnemyCount >= 10);
+
     return true;
 }
 

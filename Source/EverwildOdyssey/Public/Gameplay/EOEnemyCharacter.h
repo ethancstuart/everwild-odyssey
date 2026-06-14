@@ -31,13 +31,35 @@ struct FEOEnemyArchetype
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
     bool bElite = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+    FLinearColor TintColor = FLinearColor(1.0f, 0.22f, 0.34f, 1.0f);
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+    FVector SilhouetteScale = FVector(0.65f, 0.65f, 1.1f);
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+    float ContactDamage = 5.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+    float ContactRange = 135.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
+    float AttackCooldownSeconds = 1.2f;
+
     bool IsValidForAlpha() const
     {
         return !EnemyId.IsNone()
             && !DisplayName.IsEmpty()
             && BaseStats.IsValidForAlpha()
             && ExperienceReward > 0
-            && ThreatRadius > 0.0f;
+            && ThreatRadius > 0.0f
+            && TintColor.A > 0.0f
+            && SilhouetteScale.X > 0.0f
+            && SilhouetteScale.Y > 0.0f
+            && SilhouetteScale.Z > 0.0f
+            && ContactDamage > 0.0f
+            && ContactRange > 0.0f
+            && AttackCooldownSeconds > 0.0f;
     }
 };
 
@@ -50,6 +72,9 @@ public:
     AEOEnemyCharacter();
 
     static FEOEnemyArchetype BuildRelicWispArchetype();
+    static FEOEnemyArchetype BuildRelicSentinelArchetype();
+
+    virtual void Tick(float DeltaSeconds) override;
 
     UFUNCTION(BlueprintCallable, Category = "Enemy")
     void InitializeFromArchetype(const FEOEnemyArchetype& Archetype);
@@ -80,6 +105,9 @@ private:
     TObjectPtr<UStaticMeshComponent> EnemySilhouette;
 
     UPROPERTY(VisibleAnywhere, Category = "Enemy")
+    TObjectPtr<UStaticMeshComponent> EnemyHalo;
+
+    UPROPERTY(VisibleAnywhere, Category = "Enemy")
     FName EnemyId = NAME_None;
 
     UPROPERTY(VisibleAnywhere, Category = "Enemy")
@@ -90,4 +118,18 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Enemy")
     bool bExperienceRewardClaimed = false;
+
+    UPROPERTY(VisibleAnywhere, Category = "Enemy")
+    float ContactDamage = 5.0f;
+
+    UPROPERTY(VisibleAnywhere, Category = "Enemy")
+    float ContactRange = 135.0f;
+
+    UPROPERTY(VisibleAnywhere, Category = "Enemy")
+    float AttackCooldownSeconds = 1.2f;
+
+    float TimeUntilNextContactDamage = 0.0f;
+
+    void ApplyEnemyVisuals(const FEOEnemyArchetype& Archetype);
+    void TryContactAttack(float DeltaSeconds);
 };

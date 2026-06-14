@@ -19,6 +19,21 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
+namespace
+{
+void ApplyHeroTint(UStaticMeshComponent* MeshComponent, UMaterialInterface* BaseMaterial, const FLinearColor& TintColor)
+{
+    if (MeshComponent == nullptr || BaseMaterial == nullptr)
+    {
+        return;
+    }
+
+    UMaterialInstanceDynamic* Material = UMaterialInstanceDynamic::Create(BaseMaterial, MeshComponent);
+    Material->SetVectorParameterValue(TEXT("Color"), TintColor);
+    MeshComponent->SetMaterial(0, Material);
+}
+}
+
 AEOHeroCharacter::AEOHeroCharacter()
 {
     PrimaryActorTick.bCanEverTick = true;
@@ -54,16 +69,81 @@ AEOHeroCharacter::AEOHeroCharacter()
     HeroSilhouette->SetRelativeScale3D(FVector(0.85f, 0.85f, 1.45f));
     HeroSilhouette->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+    HeroHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroHead"));
+    HeroHead->SetupAttachment(RootComponent);
+    HeroHead->SetRelativeLocation(FVector(0.0f, 0.0f, 76.0f));
+    HeroHead->SetRelativeScale3D(FVector(0.38f, 0.38f, 0.38f));
+    HeroHead->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    HeroCape = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroCape"));
+    HeroCape->SetupAttachment(RootComponent);
+    HeroCape->SetRelativeLocation(FVector(-42.0f, -34.0f, 2.0f));
+    HeroCape->SetRelativeRotation(FRotator(0.0f, -18.0f, -8.0f));
+    HeroCape->SetRelativeScale3D(FVector(0.10f, 0.56f, 1.18f));
+    HeroCape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    HeroSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroSword"));
+    HeroSword->SetupAttachment(RootComponent);
+    HeroSword->SetRelativeLocation(FVector(54.0f, 24.0f, 6.0f));
+    HeroSword->SetRelativeRotation(FRotator(0.0f, 28.0f, -30.0f));
+    HeroSword->SetRelativeScale3D(FVector(0.08f, 0.10f, 1.35f));
+    HeroSword->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    HeroShield = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroShield"));
+    HeroShield->SetupAttachment(RootComponent);
+    HeroShield->SetRelativeLocation(FVector(-56.0f, 20.0f, 10.0f));
+    HeroShield->SetRelativeRotation(FRotator(0.0f, -18.0f, 0.0f));
+    HeroShield->SetRelativeScale3D(FVector(0.38f, 0.12f, 0.64f));
+    HeroShield->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    MiraSilhouette = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiraSilhouette"));
+    MiraSilhouette->SetupAttachment(RootComponent);
+    MiraSilhouette->SetRelativeLocation(FVector(-82.0f, -78.0f, -54.0f));
+    MiraSilhouette->SetRelativeScale3D(FVector(0.42f, 0.42f, 0.92f));
+    MiraSilhouette->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    TorSilhouette = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TorSilhouette"));
+    TorSilhouette->SetupAttachment(RootComponent);
+    TorSilhouette->SetRelativeLocation(FVector(88.0f, -88.0f, -50.0f));
+    TorSilhouette->SetRelativeScale3D(FVector(0.58f, 0.58f, 1.05f));
+    TorSilhouette->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
     static ConstructorHelpers::FObjectFinder<UStaticMesh> CylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
     static ConstructorHelpers::FObjectFinder<UMaterialInterface> BasicShapeMaterial(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
     if (CylinderMesh.Succeeded())
     {
         HeroSilhouette->SetStaticMesh(CylinderMesh.Object);
         if (BasicShapeMaterial.Succeeded())
         {
-            UMaterialInstanceDynamic* HeroMaterial = UMaterialInstanceDynamic::Create(BasicShapeMaterial.Object, HeroSilhouette);
-            HeroMaterial->SetVectorParameterValue(TEXT("Color"), FLinearColor(0.12f, 0.54f, 1.0f, 1.0f));
-            HeroSilhouette->SetMaterial(0, HeroMaterial);
+            ApplyHeroTint(HeroSilhouette, BasicShapeMaterial.Object, FLinearColor(0.12f, 0.54f, 1.0f, 1.0f));
+        }
+    }
+
+    if (SphereMesh.Succeeded())
+    {
+        HeroHead->SetStaticMesh(SphereMesh.Object);
+        MiraSilhouette->SetStaticMesh(SphereMesh.Object);
+        TorSilhouette->SetStaticMesh(SphereMesh.Object);
+        if (BasicShapeMaterial.Succeeded())
+        {
+            ApplyHeroTint(HeroHead, BasicShapeMaterial.Object, FLinearColor(0.96f, 0.78f, 0.58f, 1.0f));
+            ApplyHeroTint(MiraSilhouette, BasicShapeMaterial.Object, FLinearColor(0.32f, 0.92f, 0.72f, 1.0f));
+            ApplyHeroTint(TorSilhouette, BasicShapeMaterial.Object, FLinearColor(1.0f, 0.62f, 0.18f, 1.0f));
+        }
+    }
+
+    if (CubeMesh.Succeeded())
+    {
+        HeroCape->SetStaticMesh(CubeMesh.Object);
+        HeroSword->SetStaticMesh(CubeMesh.Object);
+        HeroShield->SetStaticMesh(CubeMesh.Object);
+        if (BasicShapeMaterial.Succeeded())
+        {
+            ApplyHeroTint(HeroCape, BasicShapeMaterial.Object, FLinearColor(0.08f, 0.20f, 0.86f, 1.0f));
+            ApplyHeroTint(HeroSword, BasicShapeMaterial.Object, FLinearColor(1.0f, 0.86f, 0.34f, 1.0f));
+            ApplyHeroTint(HeroShield, BasicShapeMaterial.Object, FLinearColor(0.18f, 0.36f, 0.92f, 1.0f));
         }
     }
 
@@ -241,6 +321,14 @@ void AEOHeroCharacter::AwardEnemyIfDefeated(AEOEnemyCharacter* Enemy)
     if (Reward > 0)
     {
         const EEOProgressionResult Result = Progression->AddExperience(Reward);
+        RelicShardCount = FMath::Min(RelicShardCount + 1, RequiredRelicShardsForGate);
+        if (QuestLog->GetQuestState(TEXT("dawnwatch.starfall_arrival")) == EEOQuestState::Available)
+        {
+            QuestLog->StartQuest(TEXT("dawnwatch.starfall_arrival"));
+        }
+        QuestLog->SetWorldEventState(TEXT("starfall.relic_surge"), EEOWorldEventState::Active);
+        QuestLog->AdvanceQuest(TEXT("dawnwatch.starfall_arrival"));
+        RefreshStarfallQuestProgress();
         UE_LOG(LogTemp, Log, TEXT("Everwild hero gained %d XP: %s"), Reward, *UEnum::GetValueAsString(Result));
     }
 }
@@ -263,6 +351,11 @@ void AEOHeroCharacter::BlockReleased()
 void AEOHeroCharacter::Interact()
 {
     const EEOQuestActionResult Result = QuestLog->StartQuest(TEXT("dawnwatch.starfall_arrival"));
+    if (Result == EEOQuestActionResult::Applied || Result == EEOQuestActionResult::AlreadyActive)
+    {
+        QuestLog->SetWorldEventState(TEXT("starfall.relic_surge"), EEOWorldEventState::Active);
+    }
+    RefreshStarfallQuestProgress();
     UE_LOG(LogTemp, Log, TEXT("Everwild hero interact quest result: %s"), *UEnum::GetValueAsString(Result));
 }
 
@@ -274,4 +367,18 @@ void AEOHeroCharacter::AbilityOne()
 void AEOHeroCharacter::AbilityTwo()
 {
     ActivateAbilityAndDamageNearestEnemy(3, false);
+}
+
+void AEOHeroCharacter::RefreshStarfallQuestProgress()
+{
+    if (RelicShardCount < RequiredRelicShardsForGate || bStarfallGateStabilized)
+    {
+        return;
+    }
+
+    QuestLog->CompleteQuest(TEXT("dawnwatch.starfall_arrival"));
+    QuestLog->SetWorldEventState(TEXT("starfall.relic_surge"), EEOWorldEventState::Resolved);
+    CombatStats->RestoreHealth(25.0f);
+    bStarfallGateStabilized = true;
+    UE_LOG(LogTemp, Log, TEXT("Starfall Gate stabilized with %d relic shards"), RelicShardCount);
 }

@@ -15,6 +15,12 @@ bool FEOEnemyCharacterTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Relic Wisp has readable threat radius."), RelicWisp.ThreatRadius >= 600.0f);
     TestTrue(TEXT("Relic Wisp can take damage."), RelicWisp.BaseStats.MaxHealth > 0.0f);
 
+    const FEOEnemyArchetype RelicSentinel = AEOEnemyCharacter::BuildRelicSentinelArchetype();
+    TestTrue(TEXT("Relic Sentinel archetype is valid."), RelicSentinel.IsValidForAlpha());
+    TestTrue(TEXT("Relic Sentinel is elite."), RelicSentinel.bElite);
+    TestTrue(TEXT("Relic Sentinel is sturdier than a wisp."), RelicSentinel.BaseStats.MaxHealth > RelicWisp.BaseStats.MaxHealth);
+    TestTrue(TEXT("Relic Sentinel reads larger than a wisp."), RelicSentinel.SilhouetteScale.Z > RelicWisp.SilhouetteScale.Z);
+
     return true;
 }
 

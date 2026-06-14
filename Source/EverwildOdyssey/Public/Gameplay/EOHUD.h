@@ -32,6 +32,21 @@ struct FEOHUDSnapshot
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
     int32 ExperienceForNextLevel = 100;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+    int32 RelicShards = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+    int32 RequiredRelicShards = 3;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+    int32 ActiveEnemyCount = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+    bool bQuestAccepted = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+    bool bGateStabilized = false;
+
     bool IsValidForAlpha() const
     {
         return MaxHealth > 0.0f
@@ -42,7 +57,10 @@ struct FEOHUDSnapshot
             && Resource <= MaxResource
             && Level > 0
             && Experience >= 0
-            && ExperienceForNextLevel > 0;
+            && ExperienceForNextLevel > 0
+            && RelicShards >= 0
+            && RequiredRelicShards > 0
+            && ActiveEnemyCount >= 0;
     }
 };
 
@@ -57,4 +75,6 @@ public:
     static FEOHUDSnapshot BuildSnapshot(const AEOHeroCharacter* Hero);
     static FString FormatVitalsLine(const FEOHUDSnapshot& Snapshot);
     static FString FormatProgressionLine(const FEOHUDSnapshot& Snapshot);
+    static FString FormatObjectiveLine(const FEOHUDSnapshot& Snapshot);
+    static FString FormatWorldEventLine(const FEOHUDSnapshot& Snapshot);
 };

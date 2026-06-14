@@ -18,6 +18,14 @@
     {
       "Name": "CommonUI",
       "Enabled": true
+    },
+    {
+      "Name": "PCG",
+      "Enabled": true
+    },
+    {
+      "Name": "PCGBiomeSample",
+      "Enabled": true
     }
   ]
 }

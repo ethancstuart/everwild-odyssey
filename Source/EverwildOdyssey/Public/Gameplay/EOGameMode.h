@@ -10,7 +10,7 @@ class EVERWILDODYSSEY_API AEOGameMode : public AGameModeBase
     GENERATED_BODY()
 
 public:
-    static constexpr int32 ExpectedOpeningEnemyCount = 3;
+    static constexpr int32 ExpectedOpeningEnemyCount = 12;
 
     AEOGameMode();
 
