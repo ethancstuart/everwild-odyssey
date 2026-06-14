@@ -5,6 +5,7 @@
 #include "EOHeroCharacter.generated.h"
 
 class UCameraComponent;
+class UEOCombatStatsComponent;
 class USpringArmComponent;
 class UStaticMeshComponent;
 
@@ -32,6 +33,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Presentation")
     TObjectPtr<UStaticMeshComponent> HeroSilhouette;
+
+    UPROPERTY(VisibleAnywhere, Category = "Combat")
+    TObjectPtr<UEOCombatStatsComponent> CombatStats;
 
     void MoveForward(float Value);
     void MoveRight(float Value);

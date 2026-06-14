@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Gameplay/EOCombatStatsComponent.h"
 #include "UObject/ConstructorHelpers.h"
 
 AEOHeroCharacter::AEOHeroCharacter()
@@ -48,6 +49,8 @@ AEOHeroCharacter::AEOHeroCharacter()
     {
         HeroSilhouette->SetStaticMesh(CylinderMesh.Object);
     }
+
+    CombatStats = CreateDefaultSubobject<UEOCombatStatsComponent>(TEXT("CombatStats"));
 }
 
 void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
