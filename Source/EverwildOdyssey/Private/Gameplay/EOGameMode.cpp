@@ -2,6 +2,7 @@
 
 #include "Gameplay/EOAlphaWorldScaffold.h"
 #include "Gameplay/EOEnemyCharacter.h"
+#include "Gameplay/EOHUD.h"
 #include "Gameplay/EOHeroCharacter.h"
 #include "Gameplay/EOPlayerController.h"
 
@@ -9,6 +10,7 @@ AEOGameMode::AEOGameMode()
 {
     DefaultPawnClass = AEOHeroCharacter::StaticClass();
     PlayerControllerClass = AEOPlayerController::StaticClass();
+    HUDClass = AEOHUD::StaticClass();
 }
 
 void AEOGameMode::BeginPlay()
