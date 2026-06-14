@@ -101,6 +101,7 @@ Replace `.gitignore` with:
 
 # Local brainstorming/visual companion artifacts.
 .superpowers/
+.worktrees/
 
 # Node/web tooling if support scripts are added later.
 node_modules/
