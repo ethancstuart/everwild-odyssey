@@ -8,7 +8,6 @@
 #include "Components/StaticMeshComponent.h"
 #include "Gameplay/EOEncounterDirectorComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Presentation/EOAssetResolver.h"
 #include "Presentation/EOAssetRoleTypes.h"
 #include "World/EOZoneProfile.h"
 
@@ -119,10 +118,6 @@ void AEOAlphaWorldScaffold::BeginPlay()
 
 void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
 {
-    FEOAssetResolver AssetResolver;
-    AssetResolver.Initialize(FEOAssetRoleCatalog::BuildDefaultRoles());
-    UE_LOG(LogTemp, Log, TEXT("Everwild asset resolver: %s"), *AssetResolver.BuildReadableReport());
-
     const FEOZoneProfile ZoneProfile = BuildDefaultZoneProfile();
 
     UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
@@ -146,7 +141,7 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         return;
     }
 
-    auto CreateMesh = [this, BasicShapeMaterial](const FString& Name, UStaticMesh* Mesh, const FVector& Location, const FRotator& Rotation, const FVector& Scale, const FLinearColor& TintColor, bool bBlocksMovement, bool bApplyTint)
+    auto CreateMesh = [this, BasicShapeMaterial](const FString& Name, UStaticMesh* Mesh, const FVector& Location, const FRotator& Rotation, const FVector& Scale, const FLinearColor& TintColor, bool bBlocksMovement, bool bApplyTint, FName SpecId, FName AssetRoleId)
     {
         UStaticMeshComponent* MeshComponent = NewObject<UStaticMeshComponent>(this, MakeUniqueObjectName(this, UStaticMeshComponent::StaticClass(), FName(*Name)));
         MeshComponent->SetupAttachment(SceneRoot);
@@ -156,6 +151,8 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         MeshComponent->SetRelativeScale3D(Scale);
         MeshComponent->SetCollisionEnabled(bBlocksMovement ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
         MeshComponent->SetCastShadow(true);
+        MeshComponent->ComponentTags.Add(SpecId);
+        MeshComponent->ComponentTags.Add(AssetRoleId);
         if (bApplyTint)
         {
             if (UMaterialInstanceDynamic* TintedMaterial = BuildTintedMaterial(BasicShapeMaterial, MeshComponent, TintColor))
@@ -178,7 +175,9 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
             VisualSpec.Scale,
             DebugTintForRole(VisualSpec.AssetRoleId, VisualSpec.Tint),
             true,
-            true);
+            true,
+            VisualSpec.Id,
+            VisualSpec.AssetRoleId);
     }
 
     for (const FEOZoneVisualSpec& VisualSpec : ZoneProfile.ScenicProps)
@@ -212,7 +211,9 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
             Scale,
             DebugTintForRole(VisualSpec.AssetRoleId, VisualSpec.Tint),
             VisualSpec.bBlocksMovement,
-            bApplyTint);
+            bApplyTint,
+            VisualSpec.Id,
+            VisualSpec.AssetRoleId);
     }
 
     for (const FEOZoneLightSpec& LightSpec : ZoneProfile.Lights)
@@ -228,6 +229,13 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         RuntimeWorldLights.Add(LightComponent);
     }
 }
+
+#if WITH_DEV_AUTOMATION_TESTS
+void AEOAlphaWorldScaffold::GenerateRuntimeWorldForTesting()
+{
+    SpawnVerticalSliceWorld();
+}
+#endif
 
 int32 AEOAlphaWorldScaffold::ExpectedLandmarkCount()
 {

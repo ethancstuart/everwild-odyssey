@@ -1,5 +1,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
+#include "Components/PointLightComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Gameplay/EOAlphaWorldScaffold.h"
 #include "Misc/AutomationTest.h"
 #include "World/EOZoneProfile.h"
@@ -52,6 +54,65 @@ bool FEOAlphaWorldScaffoldTest::RunTest(const FString& Parameters)
     {
         TestTrue(TEXT("Each ambient light is valid."), AmbientLight.IsValidForAlpha());
     }
+
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEOAlphaWorldScaffoldRuntimeGenerationTest, "EverwildOdyssey.Gameplay.AlphaWorldScaffold.RuntimeGeneration", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Parameters)
+{
+    const FEOZoneProfile Profile = FEOZoneProfileCatalog::BuildStarfallValeProfile();
+    AEOAlphaWorldScaffold* Scaffold = NewObject<AEOAlphaWorldScaffold>();
+    TestNotNull(TEXT("Runtime scaffold actor can be constructed."), Scaffold);
+
+    if (Scaffold == nullptr)
+    {
+        return false;
+    }
+
+    Scaffold->GenerateRuntimeWorldForTesting();
+
+    const TArray<TObjectPtr<UStaticMeshComponent>>& RuntimeMeshes = Scaffold->GetRuntimeWorldMeshesForTesting();
+    const TArray<TObjectPtr<UPointLightComponent>>& RuntimeLights = Scaffold->GetRuntimeWorldLightsForTesting();
+
+    TestEqual(TEXT("Runtime mesh count matches profile visuals."), RuntimeMeshes.Num(), Profile.Landmarks.Num() + Profile.ScenicProps.Num());
+    TestEqual(TEXT("Runtime point light count matches profile lights."), RuntimeLights.Num(), Profile.Lights.Num());
+
+    bool bFoundBlockingLandmark = false;
+    bool bFoundBlockingScenic = false;
+    bool bFoundNonBlockingScenic = false;
+    bool bFoundDawnwatchGateComponent = false;
+    bool bFoundRoadLampRole = false;
+    bool bFoundTreeRole = false;
+
+    for (const TObjectPtr<UStaticMeshComponent>& RuntimeMesh : RuntimeMeshes)
+    {
+        const UStaticMeshComponent* MeshComponent = RuntimeMesh.Get();
+        if (MeshComponent == nullptr)
+        {
+            continue;
+        }
+
+        const FString ComponentName = MeshComponent->GetName();
+        const bool bIsLandmark = ComponentName.StartsWith(TEXT("Landmark_"));
+        const bool bIsScenic = ComponentName.StartsWith(TEXT("Scenic_"));
+        const ECollisionEnabled::Type CollisionEnabled = MeshComponent->GetCollisionEnabled();
+
+        bFoundBlockingLandmark |= bIsLandmark && CollisionEnabled == ECollisionEnabled::QueryAndPhysics;
+        bFoundBlockingScenic |= bIsScenic && CollisionEnabled == ECollisionEnabled::QueryAndPhysics;
+        bFoundNonBlockingScenic |= bIsScenic && CollisionEnabled == ECollisionEnabled::NoCollision;
+        bFoundDawnwatchGateComponent |= ComponentName.Contains(TEXT("Landmark_landmark.dawnwatch.gate"));
+        bFoundRoadLampRole |= MeshComponent->ComponentTags.Contains(FName(TEXT("zone.road.lamp")));
+        bFoundTreeRole |= MeshComponent->ComponentTags.Contains(FName(TEXT("zone.foliage.tree")));
+    }
+
+    TestTrue(TEXT("Runtime world has blocking landmark collision."), bFoundBlockingLandmark);
+    TestTrue(TEXT("Runtime world has blocking scenic collision."), bFoundBlockingScenic);
+    TestTrue(TEXT("Runtime world has non-blocking scenic collision."), bFoundNonBlockingScenic);
+    TestTrue(TEXT("Runtime world names generated landmark components."), bFoundDawnwatchGateComponent);
+    TestTrue(TEXT("Runtime world tags generated road lamp role."), bFoundRoadLampRole);
+    TestTrue(TEXT("Runtime world tags generated tree role."), bFoundTreeRole);
 
     return true;
 }
