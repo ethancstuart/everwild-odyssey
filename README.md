@@ -36,6 +36,12 @@ Launch a 1280x720 standalone play window with:
 Scripts/launch-everwild-standalone.sh
 ```
 
+Use a custom Unreal Editor executable when UE 5.7 is installed outside the common macOS locations:
+
+```bash
+UNREAL_EDITOR=/path/to/UnrealEditor Scripts/launch-everwild-standalone.sh
+```
+
 ## Design Docs
 
 - `docs/superpowers/specs/2026-06-14-everwild-odyssey-design.md`
