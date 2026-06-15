@@ -27,6 +27,24 @@ bool FEOPlayableFoundationTest::RunTest(const FString& Parameters)
         return MatchCount;
     };
 
+    const auto CountScaledAxisMappings = [](const FName AxisName, const FKey& Key, const float ExpectedScale)
+    {
+        const UInputSettings* InputSettings = GetDefault<UInputSettings>();
+        TArray<FInputAxisKeyMapping> Mappings;
+        InputSettings->GetAxisMappingByName(AxisName, Mappings);
+
+        int32 MatchCount = 0;
+        for (const FInputAxisKeyMapping& Mapping : Mappings)
+        {
+            if (Mapping.Key == Key && FMath::IsNearlyEqual(Mapping.Scale, ExpectedScale))
+            {
+                ++MatchCount;
+            }
+        }
+
+        return MatchCount;
+    };
+
     TestTrue(TEXT("Default camera boom supports heroic third-person readability."), AEOHeroCharacter::DefaultCameraBoomLength <= 720.0f);
     TestTrue(TEXT("Default camera pitch keeps hero and horizon readable."), AEOHeroCharacter::DefaultCameraPitch >= AEOHeroCharacter::MinCameraPitch && AEOHeroCharacter::DefaultCameraPitch <= AEOHeroCharacter::MaxCameraPitch);
     TestEqual(TEXT("Default camera yaw gives diagonal movement readability."), AEOHeroCharacter::DefaultCameraYaw, -35.0f);
@@ -36,10 +54,10 @@ bool FEOPlayableFoundationTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Gamepad pitch rate is positive and controlled."), AEOHeroCharacter::GamepadCameraPitchRate > 0.0f && AEOHeroCharacter::GamepadCameraPitchRate <= 120.0f);
     TestTrue(TEXT("Default basic attack range supports generous controller melee."), AEOHeroCharacter::DefaultBasicAttackRange >= 280.0f);
     TestTrue(TEXT("Default ability range supports readable MMO-style pulls."), AEOHeroCharacter::DefaultAbilityAttackRange >= 460.0f);
-    TestEqual(TEXT("Mouse X uses immediate camera yaw input."), CountAxisMappings(TEXT("CameraYaw"), EKeys::MouseX), 1);
-    TestEqual(TEXT("Mouse Y uses immediate camera pitch input."), CountAxisMappings(TEXT("CameraPitch"), EKeys::MouseY), 1);
-    TestEqual(TEXT("Gamepad right X uses frame-scaled camera yaw rate input."), CountAxisMappings(TEXT("CameraYawRate"), EKeys::Gamepad_RightX), 1);
-    TestEqual(TEXT("Gamepad right Y uses frame-scaled camera pitch rate input."), CountAxisMappings(TEXT("CameraPitchRate"), EKeys::Gamepad_RightY), 1);
+    TestEqual(TEXT("Mouse X uses immediate camera yaw input at normal scale."), CountScaledAxisMappings(TEXT("CameraYaw"), EKeys::MouseX, 1.0f), 1);
+    TestEqual(TEXT("Mouse Y uses immediate camera pitch input at normal scale."), CountScaledAxisMappings(TEXT("CameraPitch"), EKeys::MouseY, 1.0f), 1);
+    TestEqual(TEXT("Gamepad right X uses frame-scaled camera yaw rate input at normal scale."), CountScaledAxisMappings(TEXT("CameraYawRate"), EKeys::Gamepad_RightX, 1.0f), 1);
+    TestEqual(TEXT("Gamepad right Y uses frame-scaled camera pitch rate input at normal scale."), CountScaledAxisMappings(TEXT("CameraPitchRate"), EKeys::Gamepad_RightY, 1.0f), 1);
     TestEqual(TEXT("Gamepad right X is not mapped to immediate camera yaw."), CountAxisMappings(TEXT("CameraYaw"), EKeys::Gamepad_RightX), 0);
     TestEqual(TEXT("Gamepad right Y is not mapped to immediate camera pitch."), CountAxisMappings(TEXT("CameraPitch"), EKeys::Gamepad_RightY), 0);
 
