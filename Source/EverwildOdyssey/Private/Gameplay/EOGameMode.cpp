@@ -23,10 +23,12 @@ void AEOGameMode::BeginPlay()
 
         const FEOEnemyArchetype RelicWispArchetype = AEOEnemyCharacter::BuildRelicWispArchetype();
         const FEOEnemyArchetype RelicSentinelArchetype = AEOEnemyCharacter::BuildRelicSentinelArchetype();
+        const TArray<FEOEncounterEnemySpec> EnemySpecs = BuildOpeningEnemySpecs();
         const TArray<FVector> SpawnLocations = BuildOpeningEnemySpawnLocations();
 
-        for (int32 Index = 0; Index < SpawnLocations.Num(); ++Index)
+        for (int32 Index = 0; Index < EnemySpecs.Num() && Index < SpawnLocations.Num(); ++Index)
         {
+            const FEOEncounterEnemySpec& EnemySpec = EnemySpecs[Index];
             const FVector SpawnLocation = SpawnLocations[Index];
             const FRotator SpawnRotation = (FVector::ZeroVector - SpawnLocation).Rotation();
             FActorSpawnParameters SpawnParameters;
@@ -34,29 +36,41 @@ void AEOGameMode::BeginPlay()
 
             if (AEOEnemyCharacter* Enemy = World->SpawnActor<AEOEnemyCharacter>(AEOEnemyCharacter::StaticClass(), SpawnLocation, SpawnRotation, SpawnParameters))
             {
-                Enemy->InitializeFromArchetype((Index == 4 || Index == 8 || Index == 11) ? RelicSentinelArchetype : RelicWispArchetype);
+                const bool bUseSentinel = EnemySpec.bElite || EnemySpec.RoleId == TEXT("enemy.role.elite");
+                Enemy->InitializeFromArchetype(bUseSentinel ? RelicSentinelArchetype : RelicWispArchetype);
             }
         }
     }
 }
 
+TArray<FEOEncounterEnemySpec> AEOGameMode::BuildOpeningEnemySpecs()
+{
+    const FEOEncounterProfile Profile = FEOEncounterProfileCatalog::BuildRelicSurgeProfile();
+    TArray<FEOEncounterEnemySpec> EnemySpecs;
+    EnemySpecs.Reserve(ExpectedOpeningEnemyCount);
+
+    for (const FEOEncounterPhaseSpec& PhaseSpec : Profile.Phases)
+    {
+        EnemySpecs.Append(PhaseSpec.Enemies);
+    }
+
+    return EnemySpecs;
+}
+
+TMap<FName, FVector> AEOGameMode::BuildOpeningEnemyAnchorLocations()
+{
+    TMap<FName, FVector> AnchorLocations;
+    AnchorLocations.Add(TEXT("anchor.road.first_contact"), FVector(205.0f, -34.0f, 96.0f));
+    AnchorLocations.Add(TEXT("anchor.relic_surge.entry"), FVector(520.0f, -235.0f, 96.0f));
+    AnchorLocations.Add(TEXT("anchor.relic_surge.center"), FVector(760.0f, -260.0f, 96.0f));
+    AnchorLocations.Add(TEXT("anchor.relic_surge.caster_north"), FVector(760.0f, -70.0f, 96.0f));
+    AnchorLocations.Add(TEXT("anchor.relic_surge.caster_east"), FVector(970.0f, -260.0f, 96.0f));
+    AnchorLocations.Add(TEXT("anchor.relic_surge.elite"), FVector(840.0f, -310.0f, 96.0f));
+    return AnchorLocations;
+}
+
 TArray<FVector> AEOGameMode::BuildOpeningEnemySpawnLocations()
 {
-    TArray<FVector> SpawnLocations;
-    SpawnLocations.Reserve(ExpectedOpeningEnemyCount);
-
-    SpawnLocations.Add(FVector(205.0f, -34.0f, 96.0f));
-    SpawnLocations.Add(FVector(390.0f, -95.0f, 96.0f));
-    SpawnLocations.Add(FVector(520.0f, -235.0f, 96.0f));
-    SpawnLocations.Add(FVector(705.0f, -120.0f, 96.0f));
-    SpawnLocations.Add(FVector(835.0f, -250.0f, 96.0f));
-    SpawnLocations.Add(FVector(690.0f, -420.0f, 96.0f));
-    SpawnLocations.Add(FVector(890.0f, -70.0f, 96.0f));
-    SpawnLocations.Add(FVector(1030.0f, -280.0f, 96.0f));
-    SpawnLocations.Add(FVector(770.0f, -610.0f, 96.0f));
-    SpawnLocations.Add(FVector(1090.0f, -490.0f, 96.0f));
-    SpawnLocations.Add(FVector(590.0f, -560.0f, 96.0f));
-    SpawnLocations.Add(FVector(980.0f, -650.0f, 96.0f));
-
-    return SpawnLocations;
+    return FEOEncounterProfileCatalog::BuildRelicSurgeProfile()
+        .BuildSpawnLocationsFromAnchors(BuildOpeningEnemyAnchorLocations());
 }

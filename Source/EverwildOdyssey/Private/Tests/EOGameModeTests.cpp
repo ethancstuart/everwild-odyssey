@@ -10,7 +10,9 @@ bool FEOGameModeTest::RunTest(const FString& Parameters)
 {
     const TArray<FVector> SpawnLocations = AEOGameMode::BuildOpeningEnemySpawnLocations();
 
-    TestEqual(TEXT("Opening combat exposes the expected enemy count."), SpawnLocations.Num(), AEOGameMode::ExpectedOpeningEnemyCount);
+    TestEqual(TEXT("Opening combat exposes the encounter profile enemy count."), SpawnLocations.Num(), 11);
+    TestEqual(TEXT("Opening combat exposes expected profile enemy specs."), AEOGameMode::BuildOpeningEnemySpecs().Num(), AEOGameMode::ExpectedOpeningEnemyCount);
+    TestTrue(TEXT("Opening encounter has required anchors."), AEOGameMode::BuildOpeningEnemyAnchorLocations().Contains(TEXT("anchor.relic_surge.elite")));
     TestTrue(
         TEXT("The first opening enemy starts inside basic attack range."),
         SpawnLocations.Num() > 0 && FVector::DistSquared(FVector::ZeroVector, SpawnLocations[0]) <= FMath::Square(AEOHeroCharacter::DefaultBasicAttackRange));
