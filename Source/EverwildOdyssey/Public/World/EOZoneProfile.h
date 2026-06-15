@@ -187,6 +187,8 @@ struct FEOZoneProfile
     bool IsValidForAlpha() const;
     bool HasAnchor(FName AnchorId) const;
     bool HasFutureHook(FName HookId) const;
+    bool TryGetAnchor(FName AnchorId, FEOZoneAnchor& OutAnchor) const;
+    bool TryGetFutureHook(FName HookId, FEOZoneFutureHook& OutHook) const;
 };
 
 class FEOZoneProfileCatalog

@@ -2,6 +2,8 @@
 
 namespace
 {
+constexpr int32 StarfallValeScenicPropCount = 1 + 56 + 48 + 48 + 42;
+
 FText Txt(const TCHAR* Value)
 {
     return FText::FromString(Value);
@@ -104,7 +106,7 @@ bool FEOZoneProfile::IsValidForAlpha() const
 
     for (const FEOZoneFutureHook& FutureHook : FutureHooks)
     {
-        if (!FutureHook.IsValidForAlpha())
+        if (!FutureHook.IsValidForAlpha() || !HasAnchor(FutureHook.AnchorId))
         {
             return false;
         }
@@ -123,18 +125,42 @@ bool FEOZoneProfile::IsValidForAlpha() const
 
 bool FEOZoneProfile::HasAnchor(FName AnchorId) const
 {
-    return Anchors.ContainsByPredicate([AnchorId](const FEOZoneAnchor& AnchorSpec)
-    {
-        return AnchorSpec.AnchorId == AnchorId;
-    });
+    FEOZoneAnchor Anchor;
+    return TryGetAnchor(AnchorId, Anchor);
 }
 
 bool FEOZoneProfile::HasFutureHook(FName HookId) const
 {
-    return FutureHooks.ContainsByPredicate([HookId](const FEOZoneFutureHook& HookSpec)
+    FEOZoneFutureHook FutureHook;
+    return TryGetFutureHook(HookId, FutureHook);
+}
+
+bool FEOZoneProfile::TryGetAnchor(FName AnchorId, FEOZoneAnchor& OutAnchor) const
+{
+    for (const FEOZoneAnchor& AnchorSpec : Anchors)
     {
-        return HookSpec.HookId == HookId;
-    });
+        if (AnchorSpec.AnchorId == AnchorId)
+        {
+            OutAnchor = AnchorSpec;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool FEOZoneProfile::TryGetFutureHook(FName HookId, FEOZoneFutureHook& OutHook) const
+{
+    for (const FEOZoneFutureHook& HookSpec : FutureHooks)
+    {
+        if (HookSpec.HookId == HookId)
+        {
+            OutHook = HookSpec;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 FEOZoneProfile FEOZoneProfileCatalog::BuildStarfallValeProfile()
@@ -164,7 +190,7 @@ FEOZoneProfile FEOZoneProfileCatalog::BuildStarfallValeProfile()
         Visual(TEXT("landmark.sunspire_pass"), TEXT("zone.future.bridge_blocker"), EEOZoneArea::FutureBoundary, FVector(100.0f, -1060.0f, 90.0f), FVector(2.3f, 0.9f, 1.2f), FLinearColor(1.0f, 0.72f, 0.26f, 1.0f))
     };
 
-    Profile.ScenicProps.Reserve(210);
+    Profile.ScenicProps.Reserve(StarfallValeScenicPropCount);
     Profile.ScenicProps.Add(Visual(TEXT("terrain.vale.floor"), TEXT("zone.foliage.rock"), EEOZoneArea::StarfallRoad, FVector(0.0f, 0.0f, -10.0f), FVector(40.0f, 31.0f, 0.14f), FLinearColor(0.10f, 0.34f, 0.16f, 1.0f)));
     for (int32 Index = 0; Index < 56; ++Index)
     {
