@@ -34,8 +34,28 @@ bool FEOAssetRoleTypesTest::RunTest(const FString& Parameters)
     Summary.MissingRequiredRoles = 0;
     TestTrue(TEXT("Summary with no missing required roles is showcase-ready enough to launch."), Summary.CanLaunchShowcase());
 
+    Summary.RealAssetRoles = 12;
+    TestTrue(TEXT("Summary launches at the minimum real asset threshold."), Summary.CanLaunchShowcase());
+
+    Summary.RealAssetRoles = 11;
+    TestFalse(TEXT("Summary fails below the minimum real asset threshold."), Summary.CanLaunchShowcase());
+
+    Summary.TotalRoles = 0;
+    Summary.RealAssetRoles = 12;
+    TestFalse(TEXT("Summary with no total roles fails showcase readiness."), Summary.CanLaunchShowcase());
+
+    Summary.TotalRoles = Roles.Num();
+    Summary.RealAssetRoles = 15;
     Summary.MissingRequiredRoles = 1;
     TestFalse(TEXT("Summary with a missing required role fails showcase readiness."), Summary.CanLaunchShowcase());
+
+    FEOAssetRoleDefinition HeroBodyRole;
+    TestTrue(TEXT("Known hero body role can be found."), FEOAssetRoleCatalog::TryGetRoleDefinition(TEXT("hero.runeblade.body"), HeroBodyRole));
+    TestTrue(TEXT("Known hero body role has the expected category."), HeroBodyRole.Category == EEOAssetRoleCategory::Hero);
+    TestEqual(TEXT("Known hero body role has the expected preferred path."), HeroBodyRole.PreferredAssetPath.ToString(), FString(TEXT("/Game/LocalOnly/Heroes/Runeblade/SK_Runeblade.SK_Runeblade")));
+
+    FEOAssetRoleDefinition UnknownRole;
+    TestFalse(TEXT("Unknown role cannot be found."), FEOAssetRoleCatalog::TryGetRoleDefinition(TEXT("hero.unknown.body"), UnknownRole));
 
     return true;
 }
