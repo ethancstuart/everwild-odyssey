@@ -24,6 +24,10 @@ public:
     static constexpr float DefaultCameraBoomLength = 680.0f;
     static constexpr float DefaultCameraPitch = -22.0f;
     static constexpr float DefaultCameraYaw = -35.0f;
+    static constexpr float MinCameraPitch = -28.0f;
+    static constexpr float MaxCameraPitch = -16.0f;
+    static constexpr float GamepadCameraYawRate = 120.0f;
+    static constexpr float GamepadCameraPitchRate = 72.0f;
     static constexpr float DefaultBasicAttackRange = 300.0f;
     static constexpr float DefaultAbilityAttackRange = 480.0f;
     static constexpr int32 RequiredRelicShardsForGate = 3;
@@ -100,6 +104,8 @@ private:
     void MoveRight(float Value);
     void CameraYaw(float Value);
     void CameraPitch(float Value);
+    void CameraYawRate(float Value);
+    void CameraPitchRate(float Value);
     void BasicAttack();
     AEOEnemyCharacter* FindNearestEnemyInRange(float Range) const;
     void ActivateAbilityAndDamageNearestEnemy(int32 AbilityIndex, bool bUltimate);

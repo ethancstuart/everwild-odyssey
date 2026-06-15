@@ -5,6 +5,7 @@
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Core/EOHeroClassDefinition.h"
+#include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Gameplay/EOAbilityRuntimeComponent.h"
@@ -222,6 +223,8 @@ void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &AEOHeroCharacter::MoveRight);
     PlayerInputComponent->BindAxis(TEXT("CameraYaw"), this, &AEOHeroCharacter::CameraYaw);
     PlayerInputComponent->BindAxis(TEXT("CameraPitch"), this, &AEOHeroCharacter::CameraPitch);
+    PlayerInputComponent->BindAxis(TEXT("CameraYawRate"), this, &AEOHeroCharacter::CameraYawRate);
+    PlayerInputComponent->BindAxis(TEXT("CameraPitchRate"), this, &AEOHeroCharacter::CameraPitchRate);
 
     PlayerInputComponent->BindAction(TEXT("BasicAttack"), IE_Pressed, this, &AEOHeroCharacter::BasicAttack);
     PlayerInputComponent->BindAction(TEXT("TargetCycle"), IE_Pressed, this, &AEOHeroCharacter::TargetCycle);
@@ -266,8 +269,28 @@ void AEOHeroCharacter::CameraPitch(float Value)
     if (CameraBoom != nullptr && !FMath::IsNearlyZero(Value))
     {
         FRotator CameraRotation = CameraBoom->GetRelativeRotation();
-        CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + Value, -28.0f, -16.0f);
+        CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + Value, MinCameraPitch, MaxCameraPitch);
         CameraBoom->SetRelativeRotation(CameraRotation);
+    }
+}
+
+void AEOHeroCharacter::CameraYawRate(float Value)
+{
+    if (!FMath::IsNearlyZero(Value))
+    {
+        const UWorld* World = GetWorld();
+        const float DeltaSeconds = World != nullptr ? World->GetDeltaSeconds() : 0.0f;
+        CameraYaw(Value * GamepadCameraYawRate * DeltaSeconds);
+    }
+}
+
+void AEOHeroCharacter::CameraPitchRate(float Value)
+{
+    if (!FMath::IsNearlyZero(Value))
+    {
+        const UWorld* World = GetWorld();
+        const float DeltaSeconds = World != nullptr ? World->GetDeltaSeconds() : 0.0f;
+        CameraPitch(Value * GamepadCameraPitchRate * DeltaSeconds);
     }
 }
 
