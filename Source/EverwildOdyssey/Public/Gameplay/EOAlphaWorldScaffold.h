@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "World/EOZoneProfile.h"
 #include "EOAlphaWorldScaffold.generated.h"
 
 class USceneComponent;
@@ -115,15 +116,16 @@ class EVERWILDODYSSEY_API AEOAlphaWorldScaffold : public AActor
     GENERATED_BODY()
 
 public:
-    static constexpr int32 ExpectedLandmarkCount = 14;
-    static constexpr int32 ExpectedScenicPropCount = 160;
-    static constexpr int32 ExpectedAmbientLightCount = 16;
+    static int32 ExpectedLandmarkCount();
+    static int32 ExpectedScenicPropCount();
+    static int32 ExpectedAmbientLightCount();
 
     AEOAlphaWorldScaffold();
 
-    static TArray<FEOAlphaLandmarkSpec> BuildDefaultLandmarks();
-    static TArray<FEOAlphaScenicPropSpec> BuildDefaultScenicProps();
-    static TArray<FEOAlphaLightSpec> BuildDefaultAmbientLights();
+    static TArray<FEOZoneVisualSpec> BuildDefaultLandmarks();
+    static TArray<FEOZoneVisualSpec> BuildDefaultScenicProps();
+    static TArray<FEOZoneLightSpec> BuildDefaultAmbientLights();
+    static FEOZoneProfile BuildDefaultZoneProfile();
 
     UEOEncounterDirectorComponent* GetEncounterDirectorComponent() const { return EncounterDirector; }
 
