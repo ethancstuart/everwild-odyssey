@@ -36,6 +36,25 @@ void DrawUnitFrame(AHUD* HUD, const FEOHUDUnitFrame& Frame, float X, float Y, fl
         Y + 7.0f);
     DrawBar(HUD, X + 10.0f, Y + 27.0f, W - 20.0f, 7.0f, Frame.Health, Frame.MaxHealth, Frame.RoleColor, FLinearColor(0.07f, 0.08f, 0.10f, 0.88f));
 }
+
+FString BuildPartySummaryLine(const FEOHUDPresentationModel& PresentationModel)
+{
+    FString Summary = FString::Printf(TEXT("Party: %s"), *PresentationModel.PlayerFrame.DisplayName.ToString());
+    constexpr int32 MaxPartyMembersInSummary = 3;
+    const int32 PartyMemberCount = FMath::Min(PresentationModel.PartyFrames.Num(), MaxPartyMembersInSummary);
+    for (int32 Index = 0; Index < PartyMemberCount; ++Index)
+    {
+        Summary += FString::Printf(TEXT(" + %s"), *PresentationModel.PartyFrames[Index].DisplayName.ToString());
+    }
+
+    const int32 RemainingPartyMembers = PresentationModel.PartyFrames.Num() - PartyMemberCount;
+    if (RemainingPartyMembers > 0)
+    {
+        Summary += FString::Printf(TEXT(" + %d more"), RemainingPartyMembers);
+    }
+
+    return Summary;
+}
 }
 
 void AEOHUD::DrawHUD()
@@ -75,7 +94,7 @@ void AEOHUD::DrawHUD()
     DrawText(PresentationModel.WorldEventText.ToString(), FLinearColor(1.0f, 0.54f, 0.94f, 1.0f), ViewW - 432.0f, 122.0f);
     DrawText(FormatProgressionLine(Snapshot), FLinearColor(0.82f, 0.94f, 1.0f, 1.0f), ViewW - 432.0f, 146.0f);
     DrawText(
-        FString::Printf(TEXT("Party: %s + %s + %s"), *PresentationModel.PlayerFrame.DisplayName.ToString(), *PresentationModel.PartyFrames[0].DisplayName.ToString(), *PresentationModel.PartyFrames[1].DisplayName.ToString()),
+        BuildPartySummaryLine(PresentationModel),
         FLinearColor(0.78f, 1.0f, 0.78f, 1.0f),
         ViewW - 432.0f,
         172.0f);

@@ -16,6 +16,18 @@ bool FEOHUDPresentationTypesTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("HUD exposes controller attack glyph."), Model.FindGlyphForAction(TEXT("BasicAttack")), FString(TEXT("X")));
     TestTrue(TEXT("Target frame has an elite-ready role."), Model.TargetFrame.TargetRole == TEXT("Elite") || Model.TargetFrame.TargetRole == TEXT("Minion"));
 
+    FEOHUDPresentationModel EmptyPartyModel = Model;
+    EmptyPartyModel.PartyFrames.Empty();
+    TestFalse(TEXT("HUD presentation rejects empty party frames."), EmptyPartyModel.IsValidForAlpha());
+
+    FEOHUDPresentationModel MissingGlyphModel = Model;
+    MissingGlyphModel.ActionSlots[0].ControllerGlyph.Reset();
+    TestFalse(TEXT("HUD presentation rejects missing action glyphs."), MissingGlyphModel.IsValidForAlpha());
+
+    FEOHUDPresentationModel InvalidHealthModel = Model;
+    InvalidHealthModel.PlayerFrame.Health = InvalidHealthModel.PlayerFrame.MaxHealth + 1.0f;
+    TestFalse(TEXT("HUD presentation rejects invalid player health."), InvalidHealthModel.IsValidForAlpha());
+
     return true;
 }
 
