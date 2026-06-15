@@ -7,9 +7,11 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEOPlayableFoundationTest, "EverwildOdyssey.Gam
 
 bool FEOPlayableFoundationTest::RunTest(const FString& Parameters)
 {
-    TestEqual(TEXT("Default camera boom creates an adventure MMO read."), AEOHeroCharacter::DefaultCameraBoomLength, 960.0f);
-    TestEqual(TEXT("Default camera pitch keeps the hero and horizon readable."), AEOHeroCharacter::DefaultCameraPitch, -48.0f);
-    TestEqual(TEXT("Default camera yaw gives diagonal movement readability."), AEOHeroCharacter::DefaultCameraYaw, -42.0f);
+    TestTrue(TEXT("Default camera boom supports heroic third-person readability."), AEOHeroCharacter::DefaultCameraBoomLength <= 720.0f);
+    TestTrue(TEXT("Default camera pitch keeps hero and horizon readable."), AEOHeroCharacter::DefaultCameraPitch >= -28.0f && AEOHeroCharacter::DefaultCameraPitch <= -16.0f);
+    TestEqual(TEXT("Default camera yaw gives diagonal movement readability."), AEOHeroCharacter::DefaultCameraYaw, -35.0f);
+    TestTrue(TEXT("Default basic attack range supports generous controller melee."), AEOHeroCharacter::DefaultBasicAttackRange >= 280.0f);
+    TestTrue(TEXT("Default ability range supports readable MMO-style pulls."), AEOHeroCharacter::DefaultAbilityAttackRange >= 460.0f);
 
     return true;
 }

@@ -52,48 +52,48 @@ AEOHeroCharacter::AEOHeroCharacter()
     Movement->JumpZVelocity = 520.0f;
     Movement->AirControl = 0.35f;
 
-    CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("IsometricCameraBoom"));
+    CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("HeroicThirdPersonCameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
     CameraBoom->TargetArmLength = DefaultCameraBoomLength;
     CameraBoom->SetRelativeRotation(FRotator(DefaultCameraPitch, DefaultCameraYaw, 0.0f));
     CameraBoom->bDoCollisionTest = false;
     CameraBoom->bUsePawnControlRotation = false;
 
-    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("IsometricCamera"));
+    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("HeroicThirdPersonCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false;
 
     HeroSilhouette = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroSilhouette"));
     HeroSilhouette->SetupAttachment(RootComponent);
-    HeroSilhouette->SetRelativeLocation(FVector(0.0f, 0.0f, -46.0f));
-    HeroSilhouette->SetRelativeScale3D(FVector(0.85f, 0.85f, 1.45f));
+    HeroSilhouette->SetRelativeLocation(FVector(0.0f, 0.0f, -32.0f));
+    HeroSilhouette->SetRelativeScale3D(FVector(1.05f, 0.82f, 1.72f));
     HeroSilhouette->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     HeroHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroHead"));
     HeroHead->SetupAttachment(RootComponent);
-    HeroHead->SetRelativeLocation(FVector(0.0f, 0.0f, 76.0f));
-    HeroHead->SetRelativeScale3D(FVector(0.38f, 0.38f, 0.38f));
+    HeroHead->SetRelativeLocation(FVector(0.0f, 0.0f, 112.0f));
+    HeroHead->SetRelativeScale3D(FVector(0.42f, 0.42f, 0.42f));
     HeroHead->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     HeroCape = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroCape"));
     HeroCape->SetupAttachment(RootComponent);
-    HeroCape->SetRelativeLocation(FVector(-42.0f, -34.0f, 2.0f));
-    HeroCape->SetRelativeRotation(FRotator(0.0f, -18.0f, -8.0f));
-    HeroCape->SetRelativeScale3D(FVector(0.10f, 0.56f, 1.18f));
+    HeroCape->SetRelativeLocation(FVector(-48.0f, -38.0f, 18.0f));
+    HeroCape->SetRelativeRotation(FRotator(-4.0f, -18.0f, -8.0f));
+    HeroCape->SetRelativeScale3D(FVector(0.12f, 0.70f, 1.46f));
     HeroCape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     HeroSword = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroSword"));
     HeroSword->SetupAttachment(RootComponent);
-    HeroSword->SetRelativeLocation(FVector(54.0f, 24.0f, 6.0f));
-    HeroSword->SetRelativeRotation(FRotator(0.0f, 28.0f, -30.0f));
-    HeroSword->SetRelativeScale3D(FVector(0.08f, 0.10f, 1.35f));
+    HeroSword->SetRelativeLocation(FVector(68.0f, 28.0f, 20.0f));
+    HeroSword->SetRelativeRotation(FRotator(0.0f, 28.0f, -32.0f));
+    HeroSword->SetRelativeScale3D(FVector(0.10f, 0.12f, 1.72f));
     HeroSword->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     HeroShield = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroShield"));
     HeroShield->SetupAttachment(RootComponent);
-    HeroShield->SetRelativeLocation(FVector(-56.0f, 20.0f, 10.0f));
+    HeroShield->SetRelativeLocation(FVector(-70.0f, 20.0f, 28.0f));
     HeroShield->SetRelativeRotation(FRotator(0.0f, -18.0f, 0.0f));
-    HeroShield->SetRelativeScale3D(FVector(0.38f, 0.12f, 0.64f));
+    HeroShield->SetRelativeScale3D(FVector(0.46f, 0.14f, 0.78f));
     HeroShield->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     MiraSilhouette = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MiraSilhouette"));
@@ -112,6 +112,8 @@ AEOHeroCharacter::AEOHeroCharacter()
     static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
     static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereMesh(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
     static ConstructorHelpers::FObjectFinder<UMaterialInterface> BasicShapeMaterial(TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+
+    // These meshes are explicit hero proxies. The asset resolver reports whether final role assets are present.
     if (CylinderMesh.Succeeded())
     {
         HeroSilhouette->SetStaticMesh(CylinderMesh.Object);
@@ -218,8 +220,11 @@ void AEOHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
     PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &AEOHeroCharacter::MoveForward);
     PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &AEOHeroCharacter::MoveRight);
+    PlayerInputComponent->BindAxis(TEXT("CameraYaw"), this, &AEOHeroCharacter::CameraYaw);
+    PlayerInputComponent->BindAxis(TEXT("CameraPitch"), this, &AEOHeroCharacter::CameraPitch);
 
     PlayerInputComponent->BindAction(TEXT("BasicAttack"), IE_Pressed, this, &AEOHeroCharacter::BasicAttack);
+    PlayerInputComponent->BindAction(TEXT("TargetCycle"), IE_Pressed, this, &AEOHeroCharacter::TargetCycle);
     PlayerInputComponent->BindAction(TEXT("Dodge"), IE_Pressed, this, &AEOHeroCharacter::Dodge);
     PlayerInputComponent->BindAction(TEXT("Block"), IE_Pressed, this, &AEOHeroCharacter::BlockPressed);
     PlayerInputComponent->BindAction(TEXT("Block"), IE_Released, this, &AEOHeroCharacter::BlockReleased);
@@ -243,6 +248,26 @@ void AEOHeroCharacter::MoveRight(float Value)
     {
         const FVector Direction = FRotationMatrix(FRotator(0.0f, DefaultCameraYaw, 0.0f)).GetUnitAxis(EAxis::Y);
         AddMovementInput(Direction, Value);
+    }
+}
+
+void AEOHeroCharacter::CameraYaw(float Value)
+{
+    if (CameraBoom != nullptr && !FMath::IsNearlyZero(Value))
+    {
+        FRotator CameraRotation = CameraBoom->GetRelativeRotation();
+        CameraRotation.Yaw = FRotator::NormalizeAxis(CameraRotation.Yaw + Value);
+        CameraBoom->SetRelativeRotation(CameraRotation);
+    }
+}
+
+void AEOHeroCharacter::CameraPitch(float Value)
+{
+    if (CameraBoom != nullptr && !FMath::IsNearlyZero(Value))
+    {
+        FRotator CameraRotation = CameraBoom->GetRelativeRotation();
+        CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + Value, -28.0f, -16.0f);
+        CameraBoom->SetRelativeRotation(CameraRotation);
     }
 }
 
@@ -331,6 +356,11 @@ void AEOHeroCharacter::AwardEnemyIfDefeated(AEOEnemyCharacter* Enemy)
         RefreshStarfallQuestProgress();
         UE_LOG(LogTemp, Log, TEXT("Everwild hero gained %d XP: %s"), Reward, *UEnum::GetValueAsString(Result));
     }
+}
+
+void AEOHeroCharacter::TargetCycle()
+{
+    UE_LOG(LogTemp, Verbose, TEXT("Everwild hero target cycle requested"));
 }
 
 void AEOHeroCharacter::Dodge()

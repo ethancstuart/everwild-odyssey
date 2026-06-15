@@ -21,11 +21,11 @@ class EVERWILDODYSSEY_API AEOHeroCharacter : public ACharacter
     GENERATED_BODY()
 
 public:
-    static constexpr float DefaultCameraBoomLength = 960.0f;
-    static constexpr float DefaultCameraPitch = -48.0f;
-    static constexpr float DefaultCameraYaw = -42.0f;
-    static constexpr float DefaultBasicAttackRange = 260.0f;
-    static constexpr float DefaultAbilityAttackRange = 420.0f;
+    static constexpr float DefaultCameraBoomLength = 680.0f;
+    static constexpr float DefaultCameraPitch = -22.0f;
+    static constexpr float DefaultCameraYaw = -35.0f;
+    static constexpr float DefaultBasicAttackRange = 300.0f;
+    static constexpr float DefaultAbilityAttackRange = 480.0f;
     static constexpr int32 RequiredRelicShardsForGate = 3;
 
     AEOHeroCharacter();
@@ -98,10 +98,13 @@ private:
 
     void MoveForward(float Value);
     void MoveRight(float Value);
+    void CameraYaw(float Value);
+    void CameraPitch(float Value);
     void BasicAttack();
     AEOEnemyCharacter* FindNearestEnemyInRange(float Range) const;
     void ActivateAbilityAndDamageNearestEnemy(int32 AbilityIndex, bool bUltimate);
     void AwardEnemyIfDefeated(AEOEnemyCharacter* Enemy);
+    void TargetCycle();
     void Dodge();
     void BlockPressed();
     void BlockReleased();
