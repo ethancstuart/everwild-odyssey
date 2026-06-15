@@ -13,6 +13,10 @@
 
 namespace
 {
+constexpr double MinimapMarkerWorldWidth = 2400.0;
+constexpr double MinimapMarkerWorldDepth = 1800.0;
+constexpr double MinimapMarkerHeight = 180.0;
+
 UMaterialInstanceDynamic* BuildTintedMaterial(UMaterialInterface* BaseMaterial, UObject* Outer, const FLinearColor& TintColor)
 {
     if (BaseMaterial == nullptr)
@@ -146,7 +150,7 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         return;
     }
 
-    auto CreateMesh = [this, BasicShapeMaterial](const FString& Name, UStaticMesh* Mesh, const FVector& Location, const FRotator& Rotation, const FVector& Scale, const FLinearColor& TintColor, bool bBlocksMovement, bool bApplyTint, FName SpecId, FName AssetRoleId)
+    auto CreateMesh = [this, BasicShapeMaterial](const FString& Name, UStaticMesh* Mesh, const FVector& Location, const FRotator& Rotation, const FVector& Scale, const FLinearColor& TintColor, bool bBlocksMovement, FName SpecId, FName AssetRoleId)
     {
         UStaticMeshComponent* MeshComponent = NewObject<UStaticMeshComponent>(this, MakeUniqueObjectName(this, UStaticMeshComponent::StaticClass(), FName(*Name)));
         MeshComponent->SetupAttachment(SceneRoot);
@@ -158,12 +162,9 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         MeshComponent->SetCastShadow(true);
         MeshComponent->ComponentTags.Add(SpecId);
         MeshComponent->ComponentTags.Add(AssetRoleId);
-        if (bApplyTint)
+        if (UMaterialInstanceDynamic* TintedMaterial = BuildTintedMaterial(BasicShapeMaterial, MeshComponent, TintColor))
         {
-            if (UMaterialInstanceDynamic* TintedMaterial = BuildTintedMaterial(BasicShapeMaterial, MeshComponent, TintColor))
-            {
-                MeshComponent->SetMaterial(0, TintedMaterial);
-            }
+            MeshComponent->SetMaterial(0, TintedMaterial);
         }
         AddInstanceComponent(MeshComponent);
         MeshComponent->RegisterComponent();
@@ -176,9 +177,9 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         MarkerComponent->SetupAttachment(SceneRoot);
         MarkerComponent->SetStaticMesh(Mesh);
         MarkerComponent->SetRelativeLocation(FVector(
-            (MarkerSpec.NormalizedPosition.X - 0.5f) * 2400.0f,
-            (0.5f - MarkerSpec.NormalizedPosition.Y) * 1800.0f,
-            180.0f));
+            (MarkerSpec.NormalizedPosition.X - 0.5f) * MinimapMarkerWorldWidth,
+            (0.5f - MarkerSpec.NormalizedPosition.Y) * MinimapMarkerWorldDepth,
+            MinimapMarkerHeight));
         MarkerComponent->SetRelativeScale3D(FVector(0.16f, 0.16f, 0.05f));
         MarkerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         MarkerComponent->SetCastShadow(false);
@@ -202,7 +203,6 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
             VisualSpec.Scale,
             ResolveProfileTint(VisualSpec.AssetRoleId, VisualSpec.Tint),
             true,
-            true,
             VisualSpec.Id,
             VisualSpec.AssetRoleId);
     }
@@ -212,13 +212,11 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         UStaticMesh* SelectedMesh = ProxyMeshForRole(VisualSpec.AssetRoleId, CubeMesh, ConeMesh, CylinderMesh, SphereMesh);
         FVector Location = VisualSpec.Location;
         FVector Scale = VisualSpec.Scale;
-        bool bApplyTint = true;
 
         if (VisualSpec.AssetRoleId == TEXT("zone.foliage.tree") && PcgTreeMesh != nullptr)
         {
             SelectedMesh = PcgTreeMesh;
             Location.Z = 0.0f;
-            bApplyTint = false;
         }
         else if (VisualSpec.AssetRoleId == TEXT("zone.foliage.rock") && PcgBoulderMesh != nullptr)
         {
@@ -227,7 +225,6 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
                 FMath::Max(0.72f, VisualSpec.Scale.X * 0.88f),
                 FMath::Max(0.72f, VisualSpec.Scale.Y * 0.88f),
                 FMath::Max(0.72f, VisualSpec.Scale.Z * 0.88f));
-            bApplyTint = false;
         }
 
         CreateMesh(
@@ -238,7 +235,6 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
             Scale,
             ResolveProfileTint(VisualSpec.AssetRoleId, VisualSpec.Tint),
             VisualSpec.bBlocksMovement,
-            bApplyTint,
             VisualSpec.Id,
             VisualSpec.AssetRoleId);
     }

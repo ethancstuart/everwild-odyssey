@@ -247,6 +247,41 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
         }
     }
 
+    const FEOZoneVisualSpec* ScenicTintVisual = Profile.ScenicProps.FindByPredicate([](const FEOZoneVisualSpec& VisualSpec)
+    {
+        return VisualSpec.AssetRoleId == TEXT("zone.foliage.tree");
+    });
+    if (ScenicTintVisual == nullptr)
+    {
+        ScenicTintVisual = Profile.ScenicProps.FindByPredicate([](const FEOZoneVisualSpec& VisualSpec)
+        {
+            return VisualSpec.AssetRoleId == TEXT("zone.foliage.rock");
+        });
+    }
+    TestNotNull(TEXT("Scenic profile tint assertion target exists."), ScenicTintVisual);
+
+    if (ScenicTintVisual != nullptr)
+    {
+        FEOAssetRoleDefinition AssetRole;
+        const bool bRoleFound = FEOAssetRoleCatalog::TryGetRoleDefinition(ScenicTintVisual->AssetRoleId, AssetRole);
+        TestTrue(TEXT("Scenic profile tint assertion target role resolves."), bRoleFound);
+
+        const UStaticMeshComponent* ScenicTintMesh = FindRuntimeMeshWithTags(RuntimeMeshes, ScenicTintVisual->Id, ScenicTintVisual->AssetRoleId);
+        TestNotNull(TEXT("Scenic profile tint assertion target mesh exists."), ScenicTintMesh);
+
+        if (ScenicTintMesh != nullptr && bRoleFound)
+        {
+            UMaterialInstanceDynamic* DynamicMaterial = Cast<UMaterialInstanceDynamic>(ScenicTintMesh->GetMaterial(0));
+            TestNotNull(TEXT("Scenic profile-tinted mesh uses dynamic material."), DynamicMaterial);
+            if (DynamicMaterial != nullptr)
+            {
+                const FLinearColor RuntimeTint = DynamicMaterial->K2_GetVectorParameterValue(TEXT("Color"));
+                TestTrue(TEXT("Runtime scenic mesh color uses profile tint."), AreColorsNearlyEqual(RuntimeTint, ScenicTintVisual->Tint));
+                TestFalse(TEXT("Runtime scenic mesh color is not overridden by role debug tint."), AreColorsNearlyEqual(RuntimeTint, AssetRole.DebugTint));
+            }
+        }
+    }
+
     for (const FEOMinimapMarkerSpec& Marker : Profile.MinimapMarkers)
     {
         bool bFoundMarker = false;
