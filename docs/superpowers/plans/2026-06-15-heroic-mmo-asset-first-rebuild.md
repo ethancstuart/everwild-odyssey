@@ -2588,7 +2588,205 @@ git commit -m "feat: add showcase readiness diagnostics"
 
 ---
 
-### Task 10: Visual Verification Docs And Standalone Launch Script
+### Task 10: Authored Visual Rescue Scaffold Pass
+
+**Tier:** 1
+
+**Files:**
+- Modify: `Source/EverwildOdyssey/Public/Gameplay/EOAlphaWorldScaffold.h`
+- Modify: `Source/EverwildOdyssey/Private/Gameplay/EOAlphaWorldScaffold.cpp`
+- Modify: `Source/EverwildOdyssey/Private/Tests/EOAlphaWorldScaffoldTests.cpp`
+- Modify: `docs/assets/heroic-mmo-asset-manifest.md`
+
+- [ ] **Step 1: Add failing visual-rescue scaffold assertions**
+
+Modify `Source/EverwildOdyssey/Private/Tests/EOAlphaWorldScaffoldTests.cpp` in `FEOAlphaWorldScaffoldTest::RunTest` after the minimap count assertion:
+
+```cpp
+TestTrue(TEXT("Scaffold adds authored showcase assembly parts beyond profile primitives."), AEOAlphaWorldScaffold::ExpectedShowcaseAssemblyPartCount() >= 72);
+```
+
+Modify `FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest` after retrieving `RuntimeMeshes`:
+
+```cpp
+const int32 ExpectedBaseVisuals = Profile.Landmarks.Num() + Profile.ScenicProps.Num();
+TestTrue(TEXT("Runtime mesh count includes authored showcase assemblies."), RuntimeMeshes.Num() >= ExpectedBaseVisuals + AEOAlphaWorldScaffold::ExpectedShowcaseAssemblyPartCount());
+```
+
+Add these booleans beside the existing runtime-found flags:
+
+```cpp
+bool bFoundDawnwatchAssembly = false;
+bool bFoundRelicBeamAssembly = false;
+bool bFoundSkywatchAssembly = false;
+bool bFoundVistaHeight = false;
+```
+
+Inside the runtime mesh loop, set them from tags and location:
+
+```cpp
+bFoundDawnwatchAssembly |= MeshComponent->ComponentTags.Contains(TEXT("visual.assembly.dawnwatch_gate"));
+bFoundRelicBeamAssembly |= MeshComponent->ComponentTags.Contains(TEXT("visual.assembly.relic_beam"));
+bFoundSkywatchAssembly |= MeshComponent->ComponentTags.Contains(TEXT("visual.assembly.skywatch_entrance"));
+bFoundVistaHeight |= MeshComponent->GetRelativeLocation().Z >= 560.0f;
+```
+
+Before destroying the world, assert:
+
+```cpp
+TestTrue(TEXT("Runtime world has a multi-part Dawnwatch gate assembly."), bFoundDawnwatchAssembly);
+TestTrue(TEXT("Runtime world has a relic beam spectacle assembly."), bFoundRelicBeamAssembly);
+TestTrue(TEXT("Runtime world has a Sky-Watch entrance assembly."), bFoundSkywatchAssembly);
+TestTrue(TEXT("Runtime world has skyline-height authored pieces."), bFoundVistaHeight);
+```
+
+- [ ] **Step 2: Run build to verify the new assertions fail**
+
+Run:
+
+```bash
+"/Users/Shared/Epic Games/UE_5.7/Engine/Build/BatchFiles/Mac/Build.sh" EverwildOdysseyEditor Mac Development -Project="/Users/ethanstuart/Projects/everwild-odyssey/.worktrees/alpha-foundation/EverwildOdyssey.uproject" -WaitMutex
+```
+
+Expected: build fails because `ExpectedShowcaseAssemblyPartCount` does not exist.
+
+- [ ] **Step 3: Expose the showcase assembly count**
+
+Modify `Source/EverwildOdyssey/Public/Gameplay/EOAlphaWorldScaffold.h` in the public static count section:
+
+```cpp
+static int32 ExpectedShowcaseAssemblyPartCount();
+```
+
+- [ ] **Step 4: Implement authored assembly recipes**
+
+Modify `Source/EverwildOdyssey/Private/Gameplay/EOAlphaWorldScaffold.cpp`.
+
+Add these local declarations in the anonymous namespace:
+
+```cpp
+enum class EEOProxyMeshShape : uint8
+{
+    Cube,
+    Cone,
+    Cylinder,
+    Sphere,
+    LightBeam
+};
+
+struct FEOShowcaseAssemblyPartSpec
+{
+    FName PartId = NAME_None;
+    FName AssemblyTag = NAME_None;
+    FName AssetRoleId = NAME_None;
+    EEOProxyMeshShape Shape = EEOProxyMeshShape::Cube;
+    FVector Location = FVector::ZeroVector;
+    FRotator Rotation = FRotator::ZeroRotator;
+    FVector Scale = FVector::OneVector;
+    FLinearColor Tint = FLinearColor::White;
+    bool bBlocksMovement = false;
+};
+
+FEOShowcaseAssemblyPartSpec AssemblyPart(const TCHAR* Id, const TCHAR* AssemblyTag, const TCHAR* AssetRoleId, EEOProxyMeshShape Shape, const FVector& Location, const FVector& Scale, const FLinearColor& Tint, const FRotator& Rotation = FRotator::ZeroRotator, bool bBlocksMovement = false)
+{
+    FEOShowcaseAssemblyPartSpec Result;
+    Result.PartId = FName(Id);
+    Result.AssemblyTag = FName(AssemblyTag);
+    Result.AssetRoleId = FName(AssetRoleId);
+    Result.Shape = Shape;
+    Result.Location = Location;
+    Result.Rotation = Rotation;
+    Result.Scale = Scale;
+    Result.Tint = Tint;
+    Result.bBlocksMovement = bBlocksMovement;
+    return Result;
+}
+```
+
+Add `BuildShowcaseAssemblyParts()` in the anonymous namespace. It must return at least 72 parts and include:
+
+```cpp
+TArray<FEOShowcaseAssemblyPartSpec> Parts;
+Parts.Reserve(96);
+```
+
+Required authored assemblies:
+
+- `visual.assembly.dawnwatch_gate`: thick gate base, two towers, roofs, banner poles, banner cloth, wall wings, and warm lamps around `landmark.dawnwatch.gate`.
+- `visual.assembly.road_ribbon`: flattened golden/tan road segments and side markers from spawn toward the relic surge.
+- `visual.assembly.relic_beam`: vertical beam/light-beam mesh if available, crystal ring, floating shards, and warning pylons around `landmark.relic_core`.
+- `visual.assembly.skywatch_entrance`: tall arch, side spires, portal core, top cap, and blue beam near `landmark.skywatch_entrance`.
+- `visual.assembly.future_boundaries`: stylized blockers/sign silhouettes at the Briarfen, Moonwell, and Sunspire hooks.
+
+Add this mesh selector near `ProxyMeshForRole`:
+
+```cpp
+UStaticMesh* MeshForAssemblyShape(EEOProxyMeshShape Shape, UStaticMesh* CubeMesh, UStaticMesh* ConeMesh, UStaticMesh* CylinderMesh, UStaticMesh* SphereMesh, UStaticMesh* LightBeamMesh)
+{
+    switch (Shape)
+    {
+    case EEOProxyMeshShape::Cone:
+        return ConeMesh;
+    case EEOProxyMeshShape::Cylinder:
+        return CylinderMesh;
+    case EEOProxyMeshShape::Sphere:
+        return SphereMesh;
+    case EEOProxyMeshShape::LightBeam:
+        return LightBeamMesh != nullptr ? LightBeamMesh : ConeMesh;
+    case EEOProxyMeshShape::Cube:
+    default:
+        return CubeMesh;
+    }
+}
+```
+
+Load the Engine volumetric beam mesh in `SpawnVerticalSliceWorld()`:
+
+```cpp
+UStaticMesh* LightBeamMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/EngineVolumetrics/LightBeam/Mesh/S_EV_SimpleLightBeam_03.S_EV_SimpleLightBeam_03"));
+```
+
+After landmark generation and before scenic prop generation, loop `BuildShowcaseAssemblyParts()` and call the existing `CreateMesh` lambda. Add both `PartId` and `AssemblyTag` as tags; the easiest path is to add `AssemblyTag` as an extra optional parameter to `CreateMesh`, defaulting to `NAME_None`, and tag the component when it is set.
+
+Add the static count method near the existing count methods:
+
+```cpp
+int32 AEOAlphaWorldScaffold::ExpectedShowcaseAssemblyPartCount()
+{
+    return BuildShowcaseAssemblyParts().Num();
+}
+```
+
+- [ ] **Step 5: Update the asset manifest with the local-assets finding**
+
+Append to `docs/assets/heroic-mmo-asset-manifest.md`:
+
+```markdown
+## June 15 Visual Rescue Finding
+
+The project `Content/` directory is currently empty. Local search found Engine basic shapes and Engine volumetric meshes, but no committed fantasy character, environment, enemy, animation, or UI asset pack. The visual rescue pass therefore builds authored multi-part proxy assemblies from Engine-safe primitives and volumetrics while keeping every part tagged for future replacement by real assets.
+```
+
+- [ ] **Step 6: Run build**
+
+Run:
+
+```bash
+"/Users/Shared/Epic Games/UE_5.7/Engine/Build/BatchFiles/Mac/Build.sh" EverwildOdysseyEditor Mac Development -Project="/Users/ethanstuart/Projects/everwild-odyssey/.worktrees/alpha-foundation/EverwildOdyssey.uproject" -WaitMutex
+```
+
+Expected: build succeeds and the scaffold tests compile.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add Source/EverwildOdyssey/Public/Gameplay/EOAlphaWorldScaffold.h Source/EverwildOdyssey/Private/Gameplay/EOAlphaWorldScaffold.cpp Source/EverwildOdyssey/Private/Tests/EOAlphaWorldScaffoldTests.cpp docs/assets/heroic-mmo-asset-manifest.md
+git commit -m "feat: add authored visual rescue scaffold"
+```
+
+---
+
+### Task 11: Visual Verification Docs And Standalone Launch Script
 
 **Tier:** 1 and 2
 
@@ -2744,7 +2942,7 @@ git commit -m "docs: add heroic mmo visual verification workflow"
 
 ---
 
-### Task 11: Build, Launch, Screenshot Review, And Push
+### Task 12: Build, Launch, Screenshot Review, And Push
 
 **Tier:** 1
 
@@ -2832,15 +3030,16 @@ Expected: remote branch updates successfully.
 ## Spec Coverage Self-Review
 
 - Asset-first production discipline: Tasks 1, 2, 3, 4, 9, and 10.
-- Heroic first-frame credibility: Tasks 3, 4, 5, 9, 10, and 11.
+- Heroic first-frame credibility: Tasks 3, 4, 5, 9, 10, 11, and 12.
 - MMO HUD density: Task 6.
-- Controller support: Tasks 5, 6, 10, and 11.
+- Controller support: Tasks 5, 6, 11, and 12.
 - Quest/reward/RPG hooks: Task 8.
 - Encounter roles and elite phase: Task 7.
 - Continent/future-zone hooks: Task 3 and Task 6 minimap markers.
-- Diagnostics and build modes: Tasks 1, 2, 9, 10, and 11.
-- Public repo asset policy: Task 1 and Task 10.
-- Visual verification: Tasks 10 and 11.
+- Authored visual rescue after local asset search: Task 10.
+- Diagnostics and build modes: Tasks 1, 2, 9, 11, and 12.
+- Public repo asset policy: Task 1 and Task 11.
+- Visual verification: Tasks 11 and 12.
 
 ## Execution Notes
 

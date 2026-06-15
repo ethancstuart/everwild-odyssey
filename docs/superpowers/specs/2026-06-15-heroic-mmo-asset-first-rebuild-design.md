@@ -741,6 +741,20 @@ Major risks and mitigation:
 - **Public repo asset licensing:** document dependencies and avoid committing questionable or oversized assets.
 - **Controller verification unavailable:** keep mappings visible and report physical test status honestly.
 
+## Approved Visual Rescue Pivot
+
+The June 15 direction check confirmed that Unreal remains the right high-ceiling engine, but the current output is visually unacceptable because the project has no committed content assets and is still reading as a primitive technical scaffold. A local asset search found an empty project `Content/` directory plus Engine basic shapes, Engine volumetrics, and possible optional PCG sample meshes. Until a real asset pack is installed or imported, the immediate goal is to make the generated scene feel authored rather than primitive.
+
+The next implementation pass should therefore pause new RPG-system breadth and improve the first playable frame directly:
+
+- Turn major landmarks into multi-part authored assemblies instead of one primitive per landmark.
+- Use silhouette recipes for Dawnwatch Gate, road ribbon, banners, relic beam, Sky-Watch entrance, future-zone blockers, and combat staging.
+- Prefer saturated material tints, warm/cool light contrast, volumetric beams/fog sheets where available, and foreground/midground/background composition.
+- Keep every generated visual tagged by spec/role so diagnostics and tests can still report what is real, proxy, or missing.
+- Treat this as a rescue pass, not a final art solution: if marketplace/Fab/Quixel or other legal assets become available, the resolver should replace these assemblies with real art assets later.
+
+This pass is accepted only if a runtime screenshot no longer reads as "one cube, cone, or sphere per idea." It may still be a proxy scene, but it must have intentionally built fantasy silhouettes, vista composition, visible route language, and MMO event spectacle.
+
 ## Definition Of "Bigger"
 
 "Bigger" means:
