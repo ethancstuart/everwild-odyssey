@@ -21,13 +21,52 @@ The prior approach optimized for code completeness. The new approach optimizes f
 
 ## Production Pillars
 
-The rebuild is guided by five pillars. Every design and implementation decision should serve at least one of them:
+The rebuild is guided by eight pillars. Every design and implementation decision should serve at least one of them:
 
 1. **First-frame credibility.** Within three seconds, the player should see a real fantasy champion, an authored zone, a clear road into danger, a dramatic landmark, and an MMO-style interface.
 2. **Heroic exaggeration.** Shapes should be bold: broad shoulders, oversized weapons, thick gates, large banners, chunky props, strong color coding, and readable enemy silhouettes.
 3. **Dense but legible MMO information.** The HUD should feel rich without becoming noise: party frames, target frame, action bar, quest tracker, minimap, nameplates, loot feed, XP, cooldowns, and world-event state.
 4. **Systems imply scale.** Even in single-player, the player should feel factions, reputation, public events, patrols, elites, dungeon roles, loot tiers, vendors, and future-zone hooks.
 5. **Asset-led production discipline.** The game must stop relying on one giant procedural scaffold. The world, HUD, characters, encounters, and VFX should be data-driven enough to replace assets without rewriting gameplay.
+6. **Aspirational systems, staged delivery.** The architecture should point toward classes, talents, dungeons, factions, crafting, events, and future multiplayer, while the first build lands a smaller playable spine.
+7. **Readable spectacle.** Big effects, big silhouettes, and big UI moments are encouraged only when they preserve player understanding.
+8. **Designer-operable content.** Quests, encounters, loot, events, and zone composition should move toward data profiles and editor-friendly surfaces instead of requiring code edits for every content change.
+
+## North-Star Game Vision
+
+The long-term fantasy is an original single-player-first MMO-shaped action RPG that can grow toward online systems later. The player is a champion of Dawnwatch exploring a continent fractured by falling star relics, faction conflicts, sealed sky ruins, corrupted wildlife, and rival adventuring orders.
+
+The full game vision has five layers:
+
+1. **Continent-scale world:** multiple stylized zones, each with a hub, quest chains, public events, dungeon entrances, faction conflicts, and skyline landmarks.
+2. **Class identity:** distinct playable classes with silhouettes, resources, talent paths, ability upgrades, gear preferences, and role fantasy.
+3. **Living zone systems:** patrols, public events, faction reputation, rare elites, treasure pockets, vendors, gathering nodes, and world-state changes after quest progress.
+4. **Group-content illusion:** AI companions, role frames, dungeon mechanics, threat/targeting, boss phases, party barks, and reward pacing that evoke MMO dungeon play without requiring multiplayer.
+5. **Production pipeline:** asset packs, style normalization, data-driven zone profiles, encounter profiles, quest profiles, HUD profiles, visual diagnostics, performance budgets, and repeatable build/verification scripts.
+
+The vertical slice is not the whole game. It is the foundation slice that proves those layers can exist together.
+
+## Scope Tiers
+
+To go big without losing the build, the spec separates ambition into tiers:
+
+### Tier 1: Spectacular Playable Slice
+
+This is the immediate implementation target. It must deliver one hero, one dense micro-zone, one public event, one elite phase, one strong HUD, one reward loop, and one visually convincing first frame.
+
+### Tier 2: Systems Bedrock
+
+This is built only where it directly supports Tier 1, but the shape should be future-safe: data-driven assets, encounters, quests, UI state, loot, faction state, and world-event phases.
+
+### Tier 3: Expansion Hooks
+
+These are visible in the slice but not fully built: class trainers, locked roads, dungeon entrance, future-zone map markers, unused gear slots, faction reputation, party roles, and talent preview stubs.
+
+### Tier 4: Long-Term MMO Direction
+
+This remains a design horizon, not an immediate promise: networking, real multiplayer parties, persistence servers, auction/economy systems, large zone streaming, guilds, raids, and live service operations.
+
+Every implementation plan should label work as Tier 1, Tier 2, Tier 3, or Tier 4 so ambition does not blur into uncontrolled scope.
 
 ## Creative Target
 
@@ -102,6 +141,30 @@ The implementation plan should actively look for these categories, in this order
 
 If a category cannot be sourced, the implementation plan must call that out explicitly and choose either a generated/original replacement, a temporary proxy, or a smaller milestone.
 
+## Asset Curation And Style Normalization
+
+A larger asset library is useful only if it becomes cohesive. The implementation plan should include a curation pass with these rules:
+
+- Pick one dominant environment style and force secondary assets to support it.
+- Normalize scale so doors, stairs, weapons, trees, rocks, and walls fit heroic proportions.
+- Create shared material instances or post-process/color grading to reduce pack mismatch.
+- Prefer 20 high-impact curated assets over 200 uncurated imports.
+- Tag assets by role, faction, biome, scale, collision, and visual importance.
+- Maintain an asset manifest documenting source, license, commit policy, local-only status, and fallback role.
+- Use proxy colors that communicate missing status: debug magenta for missing required assets, neutral grey for optional proxies, faction tint for intentional stylized primitives.
+
+The visual target is a unified Everwild art direction, not a museum of downloaded packs.
+
+## Originality And Inspiration Boundary
+
+The private learning context allows broad inspiration study, but the project should still train good creative discipline:
+
+- Study the broad genre traits: heroic scale, saturated zones, readable silhouettes, action bars, quest density, and faction-driven zones.
+- Translate those traits into original Dawnwatch, Starfall, Scholarium, and Ashen Covenant language.
+- Do not import, trace, recreate, or imitate exact proprietary maps, UI frames, icons, names, faction marks, class names, characters, armor sets, spell names, cinematics, audio, or music.
+- If a design feels too close to a specific protected source, rename, recolor, reshape, and reframe it until it reads as Everwild.
+- Use "what role does this serve?" as the test. Copying an expression is out; building an original system to serve the same player-facing role is in.
+
 ## Rebuild Scope
 
 The first rebuild should replace the current Starfall Vale presentation with a compact but dense vertical slice that feels like the opening edge of a much larger continent. It should be designed as a "micro-zone" with the density of a showcase demo rather than a sparse open field.
@@ -136,6 +199,63 @@ The zone should be arranged as a readable loop, not a flat arena:
 
 The zone should support a clean 5-8 minute critical path while looking like a 20-30 minute MMO zone teaser.
 
+## Continent And Zone Roadmap
+
+The vertical slice should hint at a larger world with named future zones. These do not need implementation now, but they give art direction and world-state hooks purpose:
+
+- **Starfall Vale:** starter frontier, Dawnwatch hub, relic surge, sky ruin dungeon.
+- **Briarfen March:** wetland/forest zone with Pathwarden fantasy, beast factions, ruins under roots, gathering/crafting hooks.
+- **Sunspire Expanse:** bright desert/mesa zone with ancient titan roads, caravan hubs, elite patrols, and long sightlines.
+- **Frostwake Reach:** snowy mountain zone with fortress passes, frozen relic storms, and defensive faction warfare.
+- **Emberdeep Foundry:** volcanic dungeon/industrial zone with crafting, siege engines, and heavy elite enemies.
+- **Moonwell Archive:** magical city/academy zone for Starshaper identity, puzzles, portals, and lore systems.
+
+Starfall Vale should include visual teasers for at least two future zones through road signs, locked gates, distant landmarks, NPC dialogue, or minimap edge labels.
+
+## Dawnwatch Gate Hub Detail
+
+The hub should feel like a compressed MMO town:
+
+- Entrance gate with readable silhouette and banner identity.
+- Training yard with target dummies, weapon racks, class props, and combat tutorial affordances.
+- Command post with quest giver, map table, guards, and future-zone notices.
+- Scholar station with relic tools, glowing charts, crystals, and lore barks.
+- Vendor corner with armor/weapons crates, rarity color hints, and shop marker.
+- Companion camp with two companions, bedrolls, food/fire props, party setup cue, and barks.
+- Locked exits: one bridge, one gate, one mountain road, or one portal that visibly implies expansion.
+
+The hub must be small enough to walk through quickly but dense enough to read as a real place.
+
+## Starfall Road Detail
+
+The road should teach the world without UI exposition:
+
+- Safe zone transitions from blue/gold Dawnwatch dressing into violet relic contamination.
+- Environmental storytelling: broken cart, fallen banner, wounded scout, corrupted wildlife corpse, warning signs, abandoned tools.
+- Navigation affordances: lamps, fences, terrain edges, road curves, signposts, and camera-facing landmark.
+- Optional side pocket: a rescue, chest, shrine, or elite warning route.
+- Combat spacing: enough room for dodge/block/ability testing before the event bowl.
+
+## Relic Surge Camp Detail
+
+The event area is the slice's main combat showcase:
+
+- Three-layer staging: outer minion guards, caster/ranged pockets, elite center.
+- Distinct faction props: Ashen Covenant banners, barricades, crates, relic siphons, corrupted crystals.
+- Strong event center: floating crystal, broken altar, portal rift, or sky beam.
+- Mechanics readability: red/orange danger telegraphs, blue/gold stabilization VFX, magenta corruption VFX.
+- Reward reveal: after victory, the center changes state and points the player toward Sky-Watch.
+
+## Sky-Watch Entrance Detail
+
+The dungeon entrance should feel like a promise:
+
+- Visible from spawn and event bowl.
+- Locked or partially opened after event stabilization.
+- Different material language than Dawnwatch: ancient curved stone, star-map engravings, cool moonlit color, floating relic pieces.
+- UI hook: quest tracker updates to "Sky-Watch seal weakened" or equivalent.
+- Optional camera pan or beacon pulse after event completion if feasible.
+
 ## World Simulation Layer
 
 The slice should feel alive through lightweight simulation:
@@ -148,6 +268,40 @@ The slice should feel alive through lightweight simulation:
 - Barks/toasts: short original lines for quest start, event escalation, elite spawn, victory, and future hook.
 
 This layer should be deterministic and local. It does not need networking, persistence, or complex schedules yet.
+
+## Quest And Narrative Systems
+
+The slice should move beyond a single objective string toward a quest profile model:
+
+- Quest id, title, giver, faction, intro text, objectives, rewards, completion text, and next hook.
+- Objective types: talk, travel, defeat, collect, activate, escort/rescue, discover, survive event.
+- Quest tracker formatting separate from quest data.
+- World barks tied to quest phase.
+- Companion barks tied to landmark entry, event escalation, low health, victory, and future hooks.
+- Quest rewards: XP, item, reputation, shard/currency, and unlock state.
+
+Initial quest chain:
+
+1. **Hold the Gate:** speak to Dawnwatch commander, learn the road is unsafe.
+2. **Relic Surge Warning:** travel to the event site and assess corruption.
+3. **Break the Siphons:** defeat enemies and disable relic focus points.
+4. **Sentinel Awakens:** elite phase and survival/defeat objective.
+5. **Seal Stabilized:** return or open route toward Sky-Watch entrance.
+
+The first implementation may compress this into one quest, but the data model should support the chain.
+
+## Narrative And Lore Bible
+
+The world needs enough lore depth to steer art and systems:
+
+- Starfall relics are not generic crystals. They are fragments of an ancient sky machine, half magical, half unknowable.
+- Dawnwatch believes containment protects the valley.
+- The Scholarium believes study can unlock travel, healing, and power.
+- The Ashen Covenant believes the relics are keys to breaking old divine prisons.
+- Companions should disagree lightly: defender favors safety, mystic favors understanding.
+- Enemy elites are not random monsters; they are people or constructs reshaped by bad relic rituals.
+
+Lore should appear in environmental props, barks, quest copy, faction icons, dungeon names, and item names.
 
 ## Gameplay And Camera Direction
 
@@ -189,6 +343,51 @@ Enemy roles should create simple tactical pressure:
 
 Combat acceptance is not raw complexity. It is readable input-response: press button, see hero action, see VFX, see enemy reaction, see UI feedback.
 
+## Class Roadmap
+
+The first rebuild should polish one hero, but the systems should anticipate four original classes:
+
+### Runeblade
+
+Role: durable melee striker. Resource: rune charge built by attacking/blocking. Signature: sword arcs, guard counters, relic surge.
+
+### Starshaper
+
+Role: ranged caster/support. Resource: astral focus. Signature: star bolts, shields, area fields, celestial burst.
+
+### Pathwarden
+
+Role: mobile skirmisher/controller. Resource: momentum or marks. Signature: bow/spear hybrid, traps, dodge shots, beast/nature motifs.
+
+### Lightbound Vanguard
+
+Role: tank/support. Resource: conviction. Signature: shield, taunt/challenge, radiant heal, banners, protective aura.
+
+The immediate slice may only implement Runeblade visuals and gameplay, but the UI, asset roles, input contract, and progression data should not prevent later class selection.
+
+## Talent And Ability Growth
+
+Do not implement a full talent UI immediately, but design for it:
+
+- Each class eventually has three 3-5 node talent paths.
+- Talents modify existing abilities before adding many new abilities.
+- Early examples: Rune Cleave wider arc, block counter window, dodge cooldown reduction, ultimate leaves stabilizing field.
+- Talent data should be separable from ability execution.
+- The HUD should reserve room for ability ranks or passive icons later.
+
+## Itemization Model
+
+Loot should feel MMO-like even when shallow:
+
+- Slots: weapon, offhand/shield, armor, trinket, relic.
+- Rarities: common, uncommon, rare, epic/relic.
+- Stats: attack, spell, guard, vitality, haste/cooldown, relic power.
+- Affixes: short readable text such as "+Rune Cleave damage" or "+Dodge resource recovery."
+- Drops: minions drop currency/shards rarely, caster drops focus item, elite drops a named weapon/trinket.
+- Reward presentation: loot toast, rarity color, comparison stub, and inventory data entry even if full inventory UI waits.
+
+The item system should remain compact, but data should be shaped so gear can become meaningful later.
+
 ## Encounter Design
 
 The relic surge event should behave like a miniature public event:
@@ -201,6 +400,34 @@ The relic surge event should behave like a miniature public event:
 6. Reward: XP, loot toast, shard progress, future dungeon hook.
 
 The event should be replayable in code, even if the first version triggers once.
+
+## Dungeon And Boss North Star
+
+The Sky-Watch dungeon is a future milestone but should influence the first slice:
+
+- Three-room dungeon: seal chamber, traversal/puzzle chamber, boss arena.
+- Boss: Starbound Warden, a guardian construct or corrupted champion tied to the relic.
+- Boss phases:
+  1. Melee telegraphs and shield testing.
+  2. Relic crystals empower the boss until destroyed.
+  3. Add wave pressures companions/party frames.
+  4. Final surge with arena hazards and ultimate opportunity.
+- Dungeon rewards: named relic item, faction reputation, unlock of future zone clue.
+
+The first rebuild should not fully build the dungeon unless the asset and time budget supports it. It should visually promise it and architect event/boss systems in that direction.
+
+## Encounter AI Director
+
+The event should eventually use a small AI director rather than static spawn-only logic:
+
+- Tracks player health, enemy count, event phase, and time in combat.
+- Spawns reinforcements when phase thresholds are met.
+- Avoids overwhelming the player if health is low.
+- Announces elite phase through UI/VFX/audio.
+- Can reset or calm the event if the player leaves.
+- Emits telemetry-style debug logs for tuning.
+
+The first implementation can be deterministic, but its structure should make the director easy to add.
 
 ## Progression And RPG Depth
 
@@ -216,6 +443,19 @@ The reset should add enough RPG structure to feel MMO-shaped:
 
 Do not build a full inventory UI before the first visual reset succeeds. The goal is enough progression feedback to make combat and event completion feel like part of a larger RPG.
 
+## Economy, Crafting, And Reputation Horizon
+
+The slice should include hooks that imply deeper MMO systems:
+
+- Currency: Dawnwatch marks or star shards.
+- Gathering nodes: relic shard, herb, ore, or salvage.
+- Crafting station prop in hub, even if not functional yet.
+- Vendor UI stub or interaction marker.
+- Reputation: Dawnwatch standing and Scholarium interest values.
+- Rewards can reference future vendors, recipes, or class trainers.
+
+These should be present as data and world dressing first. Full economy UI is a later milestone.
+
 ## Factions And World Identity
 
 The first slice should introduce three original identity layers:
@@ -225,6 +465,19 @@ The first slice should introduce three original identity layers:
 - **Ashen Covenant:** hostile scavenger/cult force, red/black corruption palette, attempting to weaponize the surge.
 
 These factions should appear in UI, props, banners, barks, quest text, and encounter dressing. Even if their gameplay is shallow at first, their visual language should be strong.
+
+## Companion And Party Sophistication
+
+Companions should sell the "single-player MMO party" fantasy:
+
+- Defender companion: shield/taunt visual role, stands near enemies, can draw attention or block a lane.
+- Mystic companion: support/heal/shield visual role, stays at range, comments on relic state.
+- Party frames show health, role icon, and low-health state.
+- Companions use simple cooldowns and readable VFX.
+- Companion barks should trigger at hub departure, road danger, event start, elite spawn, low health, victory, and Sky-Watch reveal.
+- Companions should not need deep commands in the first pass, but their presentation must be more than floating colored shapes.
+
+Long-term, companions can become party members with role builds, gear, trust, and quest arcs.
 
 ## UI Direction
 
@@ -255,6 +508,20 @@ The UI should be treated as a first-class part of the fantasy, not debug overlay
 
 Implementation may use Canvas HUD first if needed, but the design should aim toward UMG/CommonUI widgets or a structured HUD presentation layer so it can grow without turning into a single draw function.
 
+## UX Modes And Accessibility
+
+The UI should support both keyboard/mouse and controller without feeling like an afterthought:
+
+- Keyboard/mouse action bar labels and controller glyph labels.
+- Gamepad navigation for menus, quest panel, and pause/settings.
+- Optional target lock or target cycle for controller combat.
+- Scalable HUD size for 1280x720 readability.
+- Color choices should not rely only on red/green distinction; use icons, shapes, and labels for danger/ally/quest.
+- Combat text and cooldown indicators should be readable without covering the hero.
+- Pause/settings should expose camera distance, sensitivity, audio volume, and control reference.
+
+These features can arrive in stages, but the HUD architecture should not block them.
+
 ## Cinematic And Audio Direction
 
 The slice should have a simple cinematic language:
@@ -273,6 +540,31 @@ Audio should be opportunistic but intentional:
 
 If audio assets are unavailable, document the gap and keep hooks ready for later.
 
+## Animation And VFX Pipeline
+
+The game will not feel premium without animation and feedback:
+
+- Use a humanoid animation blueprint or simple state machine for idle, locomotion, attack, block, dodge, hit, death.
+- Add montage or timed windows for attacks where feasible.
+- Use sockets for weapon/shield placement and VFX origins.
+- VFX roles: weapon trail, hit impact, block spark, dodge streak, ability burst, enemy telegraph, elite slam, relic pulse, portal beam, completion cleanse.
+- VFX should have color language: Dawnwatch blue/gold, relic cyan/violet, hostile crimson/magenta.
+- Camera shake and hit stop should be subtle but present for heavy attacks.
+
+If proper animation assets are unavailable, prioritize importing/installing them before building more static environment content.
+
+## Music And Soundscape Horizon
+
+The first pass can be light on audio, but the design target is:
+
+- Hub theme: warm heroic ambient loop.
+- Road exploration: lighter travel ambience with relic hum.
+- Event combat: percussion or stinger layer.
+- Elite phase: sharper warning cue.
+- Victory: short completion motif.
+
+Audio hooks should be implemented as semantic events even if placeholder sounds are used first.
+
 ## Technical Design
 
 Introduce a clear separation between game systems and presentation assets:
@@ -287,6 +579,36 @@ Introduce a clear separation between game systems and presentation assets:
 
 Implementation can remain C++ first, but visual assembly may use Blueprint-friendly data assets or config structs if they speed iteration. The project should not keep growing one monolithic scaffold file for all world content.
 
+## Recommended Unreal Architecture
+
+The implementation plan should evaluate these Unreal systems:
+
+- **Enhanced Input:** preserve and deepen keyboard/controller mappings.
+- **CommonUI or UMG:** move toward structured widgets for MMO HUD and controller navigation.
+- **Gameplay Tags:** tag factions, enemy roles, item rarity, quest states, event phases, and asset roles.
+- **Data Assets or data structs:** zone, asset roles, encounters, quests, loot tables, abilities, UI theme.
+- **Niagara:** VFX for attacks, relic events, portal beams, telegraphs, and ambient particles.
+- **Level/World Partition or staged sublevels:** future option for larger zones; first slice may remain one map/profile.
+- **Gameplay Ability System:** evaluate later for multi-class/talent depth, but do not block the immediate hero-read milestone on adopting it.
+- **Mass/Smart Objects:** future option for ambient NPC density, patrols, and interaction points.
+
+The first implementation should not adopt every system at once. The plan should choose the smallest set that unlocks asset-led presentation and future growth.
+
+## Module Boundaries
+
+The codebase should evolve away from one gameplay folder with large mixed-responsibility classes:
+
+- `Core`: data types, tags, class/item/quest/event definitions.
+- `Presentation`: asset resolver, zone profile, visual diagnostics, materials/style helpers.
+- `World`: zone actor, landmarks, ambient actors, interactions, world state.
+- `Combat`: hero abilities, enemy roles, damage, target selection, combat feedback.
+- `Encounters`: event director, wave definitions, encounter rewards, boss phase data.
+- `UI`: HUD presentation model, widgets/draw surfaces, minimap, nameplates, action bar.
+- `Input`: input mapping and controller affordances.
+- `Tests`: automation coverage for the above.
+
+This structure can be introduced gradually, but every new system should have a clear home.
+
 ## Content Pipeline
 
 The implementation plan should introduce small content authoring surfaces instead of hard-coding the world:
@@ -298,6 +620,31 @@ The implementation plan should introduce small content authoring surfaces instea
 - Visual verification checklist: generated from data so the build can report "asset-led" or "proxy-heavy."
 
 Data can start as C++ structs and arrays, but should be shaped so it can later become DataAssets, JSON, CSV, or editor-authored assets.
+
+## Save And World-State Horizon
+
+The slice should design for saveable local state even if the first pass uses in-memory state:
+
+- Quest phase.
+- Event phase or completion.
+- Player XP/level.
+- Loot acquired.
+- Reputation values.
+- Discovered landmarks.
+- Gate/dungeon unlock state.
+- Settings/input preferences.
+
+Persistent save is not required for the first visual reset, but the data model should not make it hard.
+
+## Diagnostics And Telemetry For Development
+
+A sophisticated private project still needs feedback loops:
+
+- On launch, log project version, zone profile, asset role resolution summary, proxy count, missing required assets, input mode, and enabled plugins.
+- In-game developer overlay or console command can show event phase, enemy count, target, player stats, and asset-proxy status.
+- Screenshot verification should be repeatable at a known resolution.
+- Automation tests should assert not only "counts exist" but "critical systems have meaningful data."
+- The final report after each milestone should include build/test result, screenshot status, known proxy gaps, and next risk.
 
 ## Tooling And Editor Workflow
 
@@ -311,6 +658,17 @@ The rebuild should create tools/scripts that make iteration less painful:
 - A lightweight asset audit command or log that lists missing/proxy asset roles.
 
 This matters because the project is now asset-heavy. Without an audit trail, it will be too easy to accidentally regress into primitives or local-only broken references.
+
+## Build Modes
+
+Define build/run modes for development:
+
+- **Prototype Mode:** proxies allowed, fast iteration, debug overlays visible.
+- **Showcase Mode:** proxies for required visual roles fail acceptance, debug overlays hidden, first-frame composition verified.
+- **Combat Tuning Mode:** event and combat diagnostics visible, enemy roles/waves tunable.
+- **Controller Check Mode:** displays live input glyph/state and verifies bindings.
+
+These modes can start as console flags, config values, or docs conventions, but the team should use them deliberately.
 
 ## Data Flow
 
@@ -356,6 +714,48 @@ The implementation plan should break the rebuild into visible milestones:
 6. **Polish And Verification Milestone:** build, tests, standalone launch, screenshot review, controller check if available, git push.
 
 Each milestone should be playable, inspectable, and visually better than the previous one.
+
+## Expanded Roadmap
+
+After the first six milestones, the next horizon should be:
+
+7. **Dungeon Promise Milestone:** playable Sky-Watch entrance room or locked cinematic reveal with one puzzle/combat gate.
+8. **Class Preview Milestone:** non-playable class representatives or simple class select preview for Starshaper, Pathwarden, and Lightbound Vanguard.
+9. **Loot/Inventory Milestone:** lightweight inventory and gear comparison UI.
+10. **Quest Chain Milestone:** break the single objective into the five-step Starfall chain.
+11. **Companion Depth Milestone:** companion ability cooldowns, barks, and low-health/downed states.
+12. **Style Unification Milestone:** material/theme pass, post-process, UI art pass, audio pass, and screenshot review.
+
+The implementation plan should start with milestones 1-6 but avoid choices that make 7-12 painful.
+
+## Risk Register
+
+Major risks and mitigation:
+
+- **No suitable assets available:** request network/install permission early; prioritize hero/enemy/environment in that order.
+- **Asset style mismatch:** reduce asset set, normalize materials/colors, prefer cohesion over quantity.
+- **Unreal import friction:** start with one small asset pack and prove build/launch before importing more.
+- **HUD complexity explosion:** use a presentation model and implement surfaces incrementally.
+- **Combat feels bad despite good visuals:** prioritize animation/VFX/input response before adding more systems.
+- **Scope keeps expanding:** use tier labels and milestone acceptance gates.
+- **Public repo asset licensing:** document dependencies and avoid committing questionable or oversized assets.
+- **Controller verification unavailable:** keep mappings visible and report physical test status honestly.
+
+## Definition Of "Bigger"
+
+"Bigger" means:
+
+- More authored visual density in a smaller space.
+- More layers of readable systems behind the first loop.
+- More production discipline in assets, data, diagnostics, and verification.
+- More future-world implication through locked paths, factions, reputation, dungeon hooks, and class previews.
+
+"Bigger" does not mean:
+
+- A giant empty map.
+- Copying protected IP.
+- Implementing multiplayer before the single-player slice feels good.
+- Adding 20 shallow features before one hero, one zone, and one event feel impressive.
 
 ## Testing And Verification
 
