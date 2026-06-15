@@ -6,6 +6,48 @@
 #include "Gameplay/EOHeroCharacter.h"
 #include "Gameplay/EOPlayerController.h"
 
+namespace
+{
+FEOEnemyArchetype BuildRelicCasterArchetype()
+{
+    FEOEnemyArchetype Archetype = AEOEnemyCharacter::BuildRelicWispArchetype();
+    Archetype.EnemyId = TEXT("enemy.starfall.relic_caster");
+    Archetype.DisplayName = FText::FromString(TEXT("Relic Caster"));
+    Archetype.BaseStats.MaxHealth = 36.0f;
+    Archetype.BaseStats.MaxResource = 70.0f;
+    Archetype.BaseStats.AttackPower = 5.0f;
+    Archetype.BaseStats.SpellPower = 20.0f;
+    Archetype.BaseStats.Armor = 0.5f;
+    Archetype.ExperienceReward = 18;
+    Archetype.ThreatRadius = 980.0f;
+    Archetype.TintColor = FLinearColor(0.86f, 0.16f, 0.82f, 1.0f);
+    Archetype.SilhouetteScale = FVector(0.58f, 0.58f, 1.25f);
+    Archetype.ContactDamage = 4.0f;
+    Archetype.ContactRange = 150.0f;
+    Archetype.AttackCooldownSeconds = 1.6f;
+    return Archetype;
+}
+
+const FEOEnemyArchetype& SelectOpeningEnemyArchetype(
+    const FEOEncounterEnemySpec& EnemySpec,
+    const FEOEnemyArchetype& MinionArchetype,
+    const FEOEnemyArchetype& CasterArchetype,
+    const FEOEnemyArchetype& EliteArchetype)
+{
+    if (EnemySpec.bElite || EnemySpec.RoleId == TEXT("enemy.role.elite"))
+    {
+        return EliteArchetype;
+    }
+
+    if (EnemySpec.RoleId == TEXT("enemy.role.caster"))
+    {
+        return CasterArchetype;
+    }
+
+    return MinionArchetype;
+}
+}
+
 AEOGameMode::AEOGameMode()
 {
     DefaultPawnClass = AEOHeroCharacter::StaticClass();
@@ -22,22 +64,34 @@ void AEOGameMode::BeginPlay()
         World->SpawnActor<AEOAlphaWorldScaffold>(AEOAlphaWorldScaffold::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
 
         const FEOEnemyArchetype RelicWispArchetype = AEOEnemyCharacter::BuildRelicWispArchetype();
+        const FEOEnemyArchetype RelicCasterArchetype = BuildRelicCasterArchetype();
         const FEOEnemyArchetype RelicSentinelArchetype = AEOEnemyCharacter::BuildRelicSentinelArchetype();
         const TArray<FEOEncounterEnemySpec> EnemySpecs = BuildOpeningEnemySpecs();
         const TArray<FVector> SpawnLocations = BuildOpeningEnemySpawnLocations();
 
-        for (int32 Index = 0; Index < EnemySpecs.Num() && Index < SpawnLocations.Num(); ++Index)
+        ensureMsgf(
+            EnemySpecs.Num() == ExpectedOpeningEnemyCount,
+            TEXT("Opening encounter enemy spec count (%d) must match expected opening enemy count (%d)."),
+            EnemySpecs.Num(),
+            ExpectedOpeningEnemyCount);
+
+        ensureMsgf(
+            SpawnLocations.Num() == EnemySpecs.Num(),
+            TEXT("Opening encounter spawn location count (%d) must match enemy spec count (%d)."),
+            SpawnLocations.Num(),
+            EnemySpecs.Num());
+
+        for (int32 Index = 0; Index < EnemySpecs.Num(); ++Index)
         {
             const FEOEncounterEnemySpec& EnemySpec = EnemySpecs[Index];
-            const FVector SpawnLocation = SpawnLocations[Index];
+            const FVector SpawnLocation = SpawnLocations.IsValidIndex(Index) ? SpawnLocations[Index] : FVector::ZeroVector;
             const FRotator SpawnRotation = (FVector::ZeroVector - SpawnLocation).Rotation();
             FActorSpawnParameters SpawnParameters;
             SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
             if (AEOEnemyCharacter* Enemy = World->SpawnActor<AEOEnemyCharacter>(AEOEnemyCharacter::StaticClass(), SpawnLocation, SpawnRotation, SpawnParameters))
             {
-                const bool bUseSentinel = EnemySpec.bElite || EnemySpec.RoleId == TEXT("enemy.role.elite");
-                Enemy->InitializeFromArchetype(bUseSentinel ? RelicSentinelArchetype : RelicWispArchetype);
+                Enemy->InitializeFromArchetype(SelectOpeningEnemyArchetype(EnemySpec, RelicWispArchetype, RelicCasterArchetype, RelicSentinelArchetype));
             }
         }
     }

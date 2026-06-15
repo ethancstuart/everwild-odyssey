@@ -1,5 +1,7 @@
 #include "Encounters/EOEncounterProfile.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogEOEncounterProfile, Log, All);
+
 namespace
 {
 FText Txt(const TCHAR* Value)
@@ -26,6 +28,32 @@ FEOEncounterPhaseSpec Phase(const TCHAR* PhaseId, const TCHAR* DisplayName, TArr
     Result.DisplayName = Txt(DisplayName);
     Result.Enemies = MoveTemp(Enemies);
     return Result;
+}
+
+FVector FormationOffsetForAnchorUse(int32 AnchorUseIndex)
+{
+    switch (AnchorUseIndex)
+    {
+    case 0:
+        return FVector::ZeroVector;
+    case 1:
+        return FVector(125.0f, 0.0f, 0.0f);
+    case 2:
+        return FVector(-125.0f, 0.0f, 0.0f);
+    case 3:
+        return FVector(0.0f, 125.0f, 0.0f);
+    case 4:
+        return FVector(0.0f, -125.0f, 0.0f);
+    default:
+        return FVector(static_cast<float>(AnchorUseIndex) * 125.0f, 125.0f, 0.0f);
+    }
+}
+
+FVector FallbackLocationForEnemyIndex(int32 EnemyIndex)
+{
+    const int32 Column = EnemyIndex % 4;
+    const int32 Row = EnemyIndex / 4;
+    return FVector(static_cast<float>(Column) * 150.0f, static_cast<float>(Row) * 150.0f, 96.0f);
 }
 }
 
@@ -68,15 +96,33 @@ int32 FEOEncounterProfile::CountRole(FName RoleId) const
 TArray<FVector> FEOEncounterProfile::BuildSpawnLocationsFromAnchors(const TMap<FName, FVector>& AnchorLocations) const
 {
     TArray<FVector> SpawnLocations;
+    TMap<FName, int32> AnchorUseCounts;
+    int32 EnemyIndex = 0;
 
     for (const FEOEncounterPhaseSpec& PhaseSpec : Phases)
     {
         for (const FEOEncounterEnemySpec& EnemySpec : PhaseSpec.Enemies)
         {
-            if (const FVector* SpawnLocation = AnchorLocations.Find(EnemySpec.SpawnAnchorId))
+            FVector SpawnLocation = FallbackLocationForEnemyIndex(EnemyIndex);
+            if (const FVector* AnchorLocation = AnchorLocations.Find(EnemySpec.SpawnAnchorId))
             {
-                SpawnLocations.Add(*SpawnLocation);
+                SpawnLocation = *AnchorLocation;
             }
+            else
+            {
+                UE_LOG(
+                    LogEOEncounterProfile,
+                    Warning,
+                    TEXT("Encounter '%s' enemy '%s' references missing spawn anchor '%s'; using deterministic fallback location."),
+                    *EncounterId.ToString(),
+                    *EnemySpec.EnemyId.ToString(),
+                    *EnemySpec.SpawnAnchorId.ToString());
+            }
+
+            int32& AnchorUseCount = AnchorUseCounts.FindOrAdd(EnemySpec.SpawnAnchorId);
+            SpawnLocations.Add(SpawnLocation + FormationOffsetForAnchorUse(AnchorUseCount));
+            ++AnchorUseCount;
+            ++EnemyIndex;
         }
     }
 
