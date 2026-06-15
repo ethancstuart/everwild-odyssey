@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "UI/EOHUDPresentationTypes.h"
 #include "EOHUD.generated.h"
 
 class AEOHeroCharacter;
@@ -73,6 +74,7 @@ public:
     virtual void DrawHUD() override;
 
     static FEOHUDSnapshot BuildSnapshot(const AEOHeroCharacter* Hero);
+    static FEOHUDPresentationModel BuildPresentationModel(const FEOHUDSnapshot& Snapshot);
     static FString FormatVitalsLine(const FEOHUDSnapshot& Snapshot);
     static FString FormatProgressionLine(const FEOHUDSnapshot& Snapshot);
     static FString FormatObjectiveLine(const FEOHUDSnapshot& Snapshot);
