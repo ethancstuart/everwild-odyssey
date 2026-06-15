@@ -126,6 +126,7 @@ bool FEOAlphaWorldScaffoldTest::RunTest(const FString& Parameters)
 
     const TArray<FEOMinimapMarkerSpec> MinimapMarkers = AEOAlphaWorldScaffold::BuildDefaultMinimapMarkers();
     TestEqual(TEXT("Alpha world exposes expected minimap marker count."), MinimapMarkers.Num(), AEOAlphaWorldScaffold::ExpectedMinimapMarkerCount());
+    TestTrue(TEXT("Scaffold adds authored showcase assembly parts beyond profile primitives."), AEOAlphaWorldScaffold::ExpectedShowcaseAssemblyPartCount() >= 72);
 
     for (const FEOMinimapMarkerSpec& MinimapMarker : MinimapMarkers)
     {
@@ -164,7 +165,8 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
     const TArray<TObjectPtr<UPointLightComponent>>& RuntimeLights = Scaffold->GetRuntimeWorldLightsForTesting();
     const TArray<TObjectPtr<UStaticMeshComponent>>& RuntimeMarkers = Scaffold->GetRuntimeWorldMarkerMeshesForTesting();
 
-    TestEqual(TEXT("Runtime mesh count matches profile visuals."), RuntimeMeshes.Num(), Profile.Landmarks.Num() + Profile.ScenicProps.Num());
+    const int32 ExpectedBaseVisuals = Profile.Landmarks.Num() + Profile.ScenicProps.Num();
+    TestTrue(TEXT("Runtime mesh count includes authored showcase assemblies."), RuntimeMeshes.Num() >= ExpectedBaseVisuals + AEOAlphaWorldScaffold::ExpectedShowcaseAssemblyPartCount());
     TestEqual(TEXT("Runtime point light count matches profile lights."), RuntimeLights.Num(), Profile.Lights.Num());
     TestEqual(TEXT("Runtime marker count matches profile minimap markers."), RuntimeMarkers.Num(), Profile.MinimapMarkers.Num());
 
@@ -179,6 +181,10 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
     bool bFoundDawnwatchGateComponent = false;
     bool bFoundRoadLampRole = false;
     bool bFoundTreeRole = false;
+    bool bFoundDawnwatchAssembly = false;
+    bool bFoundRelicBeamAssembly = false;
+    bool bFoundSkywatchAssembly = false;
+    bool bFoundVistaHeight = false;
 
     for (const TObjectPtr<UStaticMeshComponent>& RuntimeMesh : RuntimeMeshes)
     {
@@ -203,6 +209,10 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
         bFoundDawnwatchGateComponent |= ComponentName.Contains(TEXT("Landmark_landmark.dawnwatch.gate"));
         bFoundRoadLampRole |= MeshComponent->ComponentTags.Contains(FName(TEXT("zone.road.lamp")));
         bFoundTreeRole |= MeshComponent->ComponentTags.Contains(FName(TEXT("zone.foliage.tree")));
+        bFoundDawnwatchAssembly |= MeshComponent->ComponentTags.Contains(TEXT("visual.assembly.dawnwatch_gate"));
+        bFoundRelicBeamAssembly |= MeshComponent->ComponentTags.Contains(TEXT("visual.assembly.relic_beam"));
+        bFoundSkywatchAssembly |= MeshComponent->ComponentTags.Contains(TEXT("visual.assembly.skywatch_entrance"));
+        bFoundVistaHeight |= MeshComponent->GetRelativeLocation().Z >= 560.0f;
     }
 
     for (const FEOZoneVisualSpec& Landmark : Profile.Landmarks)
@@ -305,6 +315,10 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
     TestTrue(TEXT("Runtime world names generated landmark components."), bFoundDawnwatchGateComponent);
     TestTrue(TEXT("Runtime world tags generated road lamp role."), bFoundRoadLampRole);
     TestTrue(TEXT("Runtime world tags generated tree role."), bFoundTreeRole);
+    TestTrue(TEXT("Runtime world has a multi-part Dawnwatch gate assembly."), bFoundDawnwatchAssembly);
+    TestTrue(TEXT("Runtime world has a relic beam spectacle assembly."), bFoundRelicBeamAssembly);
+    TestTrue(TEXT("Runtime world has a Sky-Watch entrance assembly."), bFoundSkywatchAssembly);
+    TestTrue(TEXT("Runtime world has skyline-height authored pieces."), bFoundVistaHeight);
 
     DestroyRuntimeScaffoldTestWorld(TestWorld);
     return true;

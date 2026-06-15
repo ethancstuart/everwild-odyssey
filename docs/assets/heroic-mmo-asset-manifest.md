@@ -27,3 +27,7 @@ Required roles are defined in `FEOAssetRoleCatalog::BuildDefaultRoles`. Showcase
 ## Current Known Gap
 
 The initial catalog points to `Content/LocalOnly` paths for final-looking hero, enemy, environment, VFX, and UI roles. If those assets are absent, the resolver reports proxy or missing state and the visual verification doc records the gap.
+
+## June 15 Visual Rescue Finding
+
+The project `Content/` directory is currently empty. Local search found Engine basic shapes and Engine volumetric meshes, but no committed fantasy character, environment, enemy, animation, or UI asset pack. The visual rescue pass therefore builds authored multi-part proxy assemblies from Engine-safe primitives and volumetrics while keeping every part tagged for future replacement by real assets.

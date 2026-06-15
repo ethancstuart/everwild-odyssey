@@ -21,6 +21,7 @@ class EVERWILDODYSSEY_API AEOAlphaWorldScaffold : public AActor
 public:
     static int32 ExpectedLandmarkCount();
     static int32 ExpectedScenicPropCount();
+    static int32 ExpectedShowcaseAssemblyPartCount();
     static int32 ExpectedAmbientLightCount();
     static int32 ExpectedMinimapMarkerCount();
 
