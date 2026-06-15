@@ -21,6 +21,21 @@ Everwild Odyssey is an original heroic high-fantasy Unreal Engine C++ project. T
 
 Detailed macOS setup notes live in `docs/setup-unreal-macos.md`.
 
+## Heroic MMO Rebuild Verification
+
+The asset-first rebuild is tracked by:
+
+- `docs/superpowers/specs/2026-06-15-heroic-mmo-asset-first-rebuild-design.md`
+- `docs/superpowers/plans/2026-06-15-heroic-mmo-asset-first-rebuild.md`
+- `docs/assets/heroic-mmo-asset-manifest.md`
+- `docs/heroic-mmo-visual-verification.md`
+
+Launch a 1280x720 standalone play window with:
+
+```bash
+Scripts/launch-everwild-standalone.sh
+```
+
 ## Design Docs
 
 - `docs/superpowers/specs/2026-06-14-everwild-odyssey-design.md`

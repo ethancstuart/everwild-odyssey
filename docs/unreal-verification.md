@@ -76,3 +76,22 @@ Connection Invalid error for service com.apple.hiservices-xpcservice.
 ```
 
 This appears to be an environment/editor startup issue rather than a project compile issue. Re-check automation after launching Unreal Editor normally once, accepting any first-run prompts, and confirming command-line editor startup can print help or create an `-AbsLog` file.
+
+## Heroic MMO Rebuild Verification Commands
+
+Build:
+
+```bash
+"/Users/Shared/Epic Games/UE_5.7/Engine/Build/BatchFiles/Mac/Build.sh" \
+  EverwildOdysseyEditor Mac Development \
+  -Project="/Users/ethanstuart/Projects/everwild-odyssey/.worktrees/alpha-foundation/EverwildOdyssey.uproject" \
+  -WaitMutex
+```
+
+Standalone launch:
+
+```bash
+Scripts/launch-everwild-standalone.sh
+```
+
+Visual pass/fail criteria live in `docs/heroic-mmo-visual-verification.md`.
