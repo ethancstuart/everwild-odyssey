@@ -4,7 +4,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogEOEncounterProfile, Log, All);
 
 namespace
 {
-FText Txt(const TCHAR* Value)
+FText EncounterText(const TCHAR* Value)
 {
     return FText::FromString(Value);
 }
@@ -25,7 +25,7 @@ FEOEncounterPhaseSpec Phase(const TCHAR* PhaseId, const TCHAR* DisplayName, TArr
 {
     FEOEncounterPhaseSpec Result;
     Result.PhaseId = FName(PhaseId);
-    Result.DisplayName = Txt(DisplayName);
+    Result.DisplayName = EncounterText(DisplayName);
     Result.Enemies = MoveTemp(Enemies);
     return Result;
 }
@@ -133,7 +133,7 @@ FEOEncounterProfile FEOEncounterProfileCatalog::BuildRelicSurgeProfile()
 {
     FEOEncounterProfile Profile;
     Profile.EncounterId = TEXT("encounter.relic_surge");
-    Profile.DisplayName = Txt(TEXT("Relic Surge"));
+    Profile.DisplayName = EncounterText(TEXT("Relic Surge"));
     Profile.LinkedWorldEventId = TEXT("starfall.relic_surge");
     Profile.RewardExperience = 150;
     Profile.RewardRelicShards = 3;
