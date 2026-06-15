@@ -74,6 +74,7 @@ public:
     static constexpr int32 MaxVisiblePartyFrames = 3;
     static constexpr int32 MaxVisibleFeedEntries = 3;
     static constexpr int32 MaxVisibleActionSlots = 8;
+    static constexpr int32 MaxVisibleMinimapMarkers = 5;
 
     virtual void DrawHUD() override;
 

@@ -112,16 +112,25 @@ void AEOHUD::DrawHUD()
     DrawRect(FLinearColor(0.12f, 0.44f, 0.18f, 0.95f), MiniX + 34.0f, MiniY + 48.0f, 124.0f, 90.0f);
     DrawRect(FLinearColor(0.13f, 0.38f, 0.92f, 0.95f), MiniX + 92.0f, MiniY + 106.0f, 54.0f, 28.0f);
     DrawRect(FLinearColor(0.34f, 0.22f, 0.10f, 0.95f), MiniX + 36.0f, MiniY + 88.0f, 118.0f, 8.0f);
-    const int32 MarkerDrawCount = FMath::Min(PresentationModel.MinimapMarkers.Num(), 5);
+    const int32 MarkerDrawCount = FMath::Min(PresentationModel.MinimapMarkers.Num(), AEOHUD::MaxVisibleMinimapMarkers);
+    FString MinimapLegendLine;
     for (int32 Index = 0; Index < MarkerDrawCount; ++Index)
     {
         const FEOMinimapMarkerSpec& Marker = PresentationModel.MinimapMarkers[Index];
         DrawRect(Marker.Color, MiniX + 34.0f + Marker.NormalizedPosition.X * 124.0f, MiniY + 48.0f + Marker.NormalizedPosition.Y * 90.0f, 7.0f, 7.0f);
+        if (Index < 3)
+        {
+            if (!MinimapLegendLine.IsEmpty())
+            {
+                MinimapLegendLine += TEXT("   ");
+            }
+            MinimapLegendLine += Marker.Label.ToString();
+        }
     }
-    if (PresentationModel.MinimapMarkers.Num() >= 6)
+    if (!MinimapLegendLine.IsEmpty())
     {
         DrawText(
-            FString::Printf(TEXT("%s   %s   %s"), *PresentationModel.MinimapMarkers[0].Label.ToString(), *PresentationModel.MinimapMarkers[3].Label.ToString(), *PresentationModel.MinimapMarkers[5].Label.ToString()),
+            MinimapLegendLine,
             FLinearColor(0.86f, 0.94f, 0.82f, 1.0f),
             MiniX + 16.0f,
             MiniY + 150.0f);

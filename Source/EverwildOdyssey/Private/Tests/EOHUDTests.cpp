@@ -29,6 +29,7 @@ bool FEOHUDTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("HUD caps visible party frames."), AEOHUD::MaxVisiblePartyFrames, 3);
     TestEqual(TEXT("HUD caps visible feed entries."), AEOHUD::MaxVisibleFeedEntries, 3);
     TestEqual(TEXT("HUD caps visible action slots."), AEOHUD::MaxVisibleActionSlots, 8);
+    TestEqual(TEXT("HUD caps visible minimap markers."), AEOHUD::MaxVisibleMinimapMarkers, 5);
     const FEOHUDPresentationModel Model = AEOHUD::BuildPresentationModel(Snapshot);
     TestTrue(TEXT("HUD presentation model is valid."), Model.IsValidForAlpha());
     TestEqual(TEXT("HUD presentation carries controller attack glyph."), Model.FindGlyphForAction(TEXT("BasicAttack")), FString(TEXT("X")));
