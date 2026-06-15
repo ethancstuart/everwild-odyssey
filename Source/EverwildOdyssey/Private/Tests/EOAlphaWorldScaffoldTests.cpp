@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Gameplay/EOAlphaWorldScaffold.h"
 #include "Misc/AutomationTest.h"
+#include "Presentation/EOAssetRoleTypes.h"
 #include "World/EOZoneProfile.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEOAlphaWorldScaffoldTest, "EverwildOdyssey.Gameplay.AlphaWorldScaffold", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
@@ -15,6 +16,7 @@ bool FEOAlphaWorldScaffoldTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Scaffold expected landmark count matches profile."), AEOAlphaWorldScaffold::ExpectedLandmarkCount(), Profile.Landmarks.Num());
     TestEqual(TEXT("Scaffold expected scenic prop count matches profile."), AEOAlphaWorldScaffold::ExpectedScenicPropCount(), Profile.ScenicProps.Num());
     TestEqual(TEXT("Scaffold expected ambient light count matches profile."), AEOAlphaWorldScaffold::ExpectedAmbientLightCount(), Profile.Lights.Num());
+    TestEqual(TEXT("Scaffold expected minimap marker count matches profile."), AEOAlphaWorldScaffold::ExpectedMinimapMarkerCount(), Profile.MinimapMarkers.Num());
 
     const TArray<FEOZoneVisualSpec> Landmarks = AEOAlphaWorldScaffold::BuildDefaultLandmarks();
 
@@ -55,6 +57,14 @@ bool FEOAlphaWorldScaffoldTest::RunTest(const FString& Parameters)
         TestTrue(TEXT("Each ambient light is valid."), AmbientLight.IsValidForAlpha());
     }
 
+    const TArray<FEOMinimapMarkerSpec> MinimapMarkers = AEOAlphaWorldScaffold::BuildDefaultMinimapMarkers();
+    TestEqual(TEXT("Alpha world exposes expected minimap marker count."), MinimapMarkers.Num(), AEOAlphaWorldScaffold::ExpectedMinimapMarkerCount());
+
+    for (const FEOMinimapMarkerSpec& MinimapMarker : MinimapMarkers)
+    {
+        TestTrue(TEXT("Each minimap marker is valid."), MinimapMarker.IsValidForAlpha());
+    }
+
     return true;
 }
 
@@ -75,9 +85,27 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
 
     const TArray<TObjectPtr<UStaticMeshComponent>>& RuntimeMeshes = Scaffold->GetRuntimeWorldMeshesForTesting();
     const TArray<TObjectPtr<UPointLightComponent>>& RuntimeLights = Scaffold->GetRuntimeWorldLightsForTesting();
+    const TArray<TObjectPtr<UStaticMeshComponent>>& RuntimeMarkers = Scaffold->GetRuntimeWorldMarkerMeshesForTesting();
 
     TestEqual(TEXT("Runtime mesh count matches profile visuals."), RuntimeMeshes.Num(), Profile.Landmarks.Num() + Profile.ScenicProps.Num());
     TestEqual(TEXT("Runtime point light count matches profile lights."), RuntimeLights.Num(), Profile.Lights.Num());
+    TestEqual(TEXT("Runtime marker count matches profile minimap markers."), RuntimeMarkers.Num(), Profile.MinimapMarkers.Num());
+
+    auto RuntimeMeshHasTags = [&RuntimeMeshes](FName SpecId, FName AssetRoleId)
+    {
+        for (const TObjectPtr<UStaticMeshComponent>& RuntimeMesh : RuntimeMeshes)
+        {
+            const UStaticMeshComponent* MeshComponent = RuntimeMesh.Get();
+            if (MeshComponent != nullptr
+                && MeshComponent->ComponentTags.Contains(SpecId)
+                && MeshComponent->ComponentTags.Contains(AssetRoleId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    };
 
     bool bFoundBlockingLandmark = false;
     bool bFoundBlockingScenic = false;
@@ -105,6 +133,37 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
         bFoundDawnwatchGateComponent |= ComponentName.Contains(TEXT("Landmark_landmark.dawnwatch.gate"));
         bFoundRoadLampRole |= MeshComponent->ComponentTags.Contains(FName(TEXT("zone.road.lamp")));
         bFoundTreeRole |= MeshComponent->ComponentTags.Contains(FName(TEXT("zone.foliage.tree")));
+    }
+
+    for (const FEOZoneVisualSpec& Landmark : Profile.Landmarks)
+    {
+        FEOAssetRoleDefinition AssetRole;
+        TestTrue(TEXT("Each runtime landmark references a valid asset role."), FEOAssetRoleCatalog::TryGetRoleDefinition(Landmark.AssetRoleId, AssetRole));
+        TestTrue(TEXT("Each runtime landmark mesh is tagged with spec and role ids."), RuntimeMeshHasTags(Landmark.Id, Landmark.AssetRoleId));
+    }
+
+    for (const FEOZoneVisualSpec& ScenicProp : Profile.ScenicProps)
+    {
+        FEOAssetRoleDefinition AssetRole;
+        TestTrue(TEXT("Each runtime scenic prop references a valid asset role."), FEOAssetRoleCatalog::TryGetRoleDefinition(ScenicProp.AssetRoleId, AssetRole));
+        TestTrue(TEXT("Each runtime scenic mesh is tagged with spec and role ids."), RuntimeMeshHasTags(ScenicProp.Id, ScenicProp.AssetRoleId));
+    }
+
+    for (const FEOMinimapMarkerSpec& Marker : Profile.MinimapMarkers)
+    {
+        bool bFoundMarker = false;
+        for (const TObjectPtr<UStaticMeshComponent>& RuntimeMarker : RuntimeMarkers)
+        {
+            const UStaticMeshComponent* MarkerComponent = RuntimeMarker.Get();
+            if (MarkerComponent != nullptr && MarkerComponent->ComponentTags.Contains(Marker.MarkerId))
+            {
+                bFoundMarker = true;
+                TestEqual(TEXT("Runtime marker collision is disabled."), MarkerComponent->GetCollisionEnabled(), ECollisionEnabled::NoCollision);
+                break;
+            }
+        }
+
+        TestTrue(TEXT("Each minimap marker is generated and tagged."), bFoundMarker);
     }
 
     TestTrue(TEXT("Runtime world has blocking landmark collision."), bFoundBlockingLandmark);

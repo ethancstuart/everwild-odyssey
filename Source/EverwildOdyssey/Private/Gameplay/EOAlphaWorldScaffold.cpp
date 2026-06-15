@@ -165,6 +165,28 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         RuntimeWorldMeshes.Add(MeshComponent);
     };
 
+    auto CreateMarkerMesh = [this, BasicShapeMaterial](const FEOMinimapMarkerSpec& MarkerSpec, UStaticMesh* Mesh)
+    {
+        UStaticMeshComponent* MarkerComponent = NewObject<UStaticMeshComponent>(this, MakeUniqueObjectName(this, UStaticMeshComponent::StaticClass(), FName(*FString::Printf(TEXT("Marker_%s"), *MarkerSpec.MarkerId.ToString()))));
+        MarkerComponent->SetupAttachment(SceneRoot);
+        MarkerComponent->SetStaticMesh(Mesh);
+        MarkerComponent->SetRelativeLocation(FVector(
+            (MarkerSpec.NormalizedPosition.X - 0.5f) * 2400.0f,
+            (0.5f - MarkerSpec.NormalizedPosition.Y) * 1800.0f,
+            180.0f));
+        MarkerComponent->SetRelativeScale3D(FVector(0.16f, 0.16f, 0.05f));
+        MarkerComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        MarkerComponent->SetCastShadow(false);
+        MarkerComponent->ComponentTags.Add(MarkerSpec.MarkerId);
+        if (UMaterialInstanceDynamic* TintedMaterial = BuildTintedMaterial(BasicShapeMaterial, MarkerComponent, MarkerSpec.Color))
+        {
+            MarkerComponent->SetMaterial(0, TintedMaterial);
+        }
+        AddInstanceComponent(MarkerComponent);
+        MarkerComponent->RegisterComponent();
+        RuntimeWorldMarkerMeshes.Add(MarkerComponent);
+    };
+
     for (const FEOZoneVisualSpec& VisualSpec : ZoneProfile.Landmarks)
     {
         CreateMesh(
@@ -228,6 +250,11 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         LightComponent->RegisterComponent();
         RuntimeWorldLights.Add(LightComponent);
     }
+
+    for (const FEOMinimapMarkerSpec& MarkerSpec : ZoneProfile.MinimapMarkers)
+    {
+        CreateMarkerMesh(MarkerSpec, CylinderMesh);
+    }
 }
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -252,6 +279,11 @@ int32 AEOAlphaWorldScaffold::ExpectedAmbientLightCount()
     return BuildDefaultZoneProfile().Lights.Num();
 }
 
+int32 AEOAlphaWorldScaffold::ExpectedMinimapMarkerCount()
+{
+    return BuildDefaultZoneProfile().MinimapMarkers.Num();
+}
+
 FEOZoneProfile AEOAlphaWorldScaffold::BuildDefaultZoneProfile()
 {
     return FEOZoneProfileCatalog::BuildStarfallValeProfile();
@@ -270,4 +302,9 @@ TArray<FEOZoneVisualSpec> AEOAlphaWorldScaffold::BuildDefaultScenicProps()
 TArray<FEOZoneLightSpec> AEOAlphaWorldScaffold::BuildDefaultAmbientLights()
 {
     return BuildDefaultZoneProfile().Lights;
+}
+
+TArray<FEOMinimapMarkerSpec> AEOAlphaWorldScaffold::BuildDefaultMinimapMarkers()
+{
+    return BuildDefaultZoneProfile().MinimapMarkers;
 }

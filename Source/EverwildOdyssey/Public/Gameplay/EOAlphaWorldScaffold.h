@@ -22,12 +22,14 @@ public:
     static int32 ExpectedLandmarkCount();
     static int32 ExpectedScenicPropCount();
     static int32 ExpectedAmbientLightCount();
+    static int32 ExpectedMinimapMarkerCount();
 
     AEOAlphaWorldScaffold();
 
     static TArray<FEOZoneVisualSpec> BuildDefaultLandmarks();
     static TArray<FEOZoneVisualSpec> BuildDefaultScenicProps();
     static TArray<FEOZoneLightSpec> BuildDefaultAmbientLights();
+    static TArray<FEOMinimapMarkerSpec> BuildDefaultMinimapMarkers();
     static FEOZoneProfile BuildDefaultZoneProfile();
 
     UEOEncounterDirectorComponent* GetEncounterDirectorComponent() const { return EncounterDirector; }
@@ -36,6 +38,7 @@ public:
     void GenerateRuntimeWorldForTesting();
     const TArray<TObjectPtr<UStaticMeshComponent>>& GetRuntimeWorldMeshesForTesting() const { return RuntimeWorldMeshes; }
     const TArray<TObjectPtr<UPointLightComponent>>& GetRuntimeWorldLightsForTesting() const { return RuntimeWorldLights; }
+    const TArray<TObjectPtr<UStaticMeshComponent>>& GetRuntimeWorldMarkerMeshesForTesting() const { return RuntimeWorldMarkerMeshes; }
 #endif
 
 protected:
@@ -62,6 +65,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Alpha World")
     TArray<TObjectPtr<UPointLightComponent>> RuntimeWorldLights;
+
+    UPROPERTY(VisibleAnywhere, Category = "Alpha World")
+    TArray<TObjectPtr<UStaticMeshComponent>> RuntimeWorldMarkerMeshes;
 
     void SpawnVerticalSliceWorld();
 };
