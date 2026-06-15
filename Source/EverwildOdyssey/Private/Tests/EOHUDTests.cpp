@@ -26,6 +26,9 @@ bool FEOHUDTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("HUD formats vitality line."), AEOHUD::FormatVitalsLine(Snapshot), FString(TEXT("HP 120 / 135  Resource 65 / 100")));
     TestEqual(TEXT("HUD formats objective line."), AEOHUD::FormatObjectiveLine(Snapshot), FString(TEXT("Objective: Collect relic shards 2 / 3, then stabilize the Starfall Gate")));
     TestEqual(TEXT("HUD formats world event line."), AEOHUD::FormatWorldEventLine(Snapshot), FString(TEXT("World Event: Relic Surge active - 7 hostiles remain")));
+    TestEqual(TEXT("HUD caps visible party frames."), AEOHUD::MaxVisiblePartyFrames, 3);
+    TestEqual(TEXT("HUD caps visible feed entries."), AEOHUD::MaxVisibleFeedEntries, 3);
+    TestEqual(TEXT("HUD caps visible action slots."), AEOHUD::MaxVisibleActionSlots, 8);
     const FEOHUDPresentationModel Model = AEOHUD::BuildPresentationModel(Snapshot);
     TestTrue(TEXT("HUD presentation model is valid."), Model.IsValidForAlpha());
     TestEqual(TEXT("HUD presentation carries controller attack glyph."), Model.FindGlyphForAction(TEXT("BasicAttack")), FString(TEXT("X")));

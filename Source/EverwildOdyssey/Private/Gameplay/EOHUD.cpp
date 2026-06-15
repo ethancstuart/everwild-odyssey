@@ -40,8 +40,7 @@ void DrawUnitFrame(AHUD* HUD, const FEOHUDUnitFrame& Frame, float X, float Y, fl
 FString BuildPartySummaryLine(const FEOHUDPresentationModel& PresentationModel)
 {
     FString Summary = FString::Printf(TEXT("Party: %s"), *PresentationModel.PlayerFrame.DisplayName.ToString());
-    constexpr int32 MaxPartyMembersInSummary = 3;
-    const int32 PartyMemberCount = FMath::Min(PresentationModel.PartyFrames.Num(), MaxPartyMembersInSummary);
+    const int32 PartyMemberCount = FMath::Min(PresentationModel.PartyFrames.Num(), AEOHUD::MaxVisiblePartyFrames);
     for (int32 Index = 0; Index < PartyMemberCount; ++Index)
     {
         Summary += FString::Printf(TEXT(" + %s"), *PresentationModel.PartyFrames[Index].DisplayName.ToString());
@@ -54,6 +53,12 @@ FString BuildPartySummaryLine(const FEOHUDPresentationModel& PresentationModel)
     }
 
     return Summary;
+}
+
+const FEOHUDPresentationModel& GetCachedAlphaPresentationFixture()
+{
+    static const FEOHUDPresentationModel AlphaFixture = FEOHUDPresentationModel::BuildAlphaFixture();
+    return AlphaFixture;
 }
 }
 
@@ -81,7 +86,8 @@ void AEOHUD::DrawHUD()
     DrawBar(this, Left + 18.0f, Top + 93.0f, 360.0f, 12.0f, Snapshot.Resource, Snapshot.MaxResource, FLinearColor(0.25f, 0.62f, 1.0f, 1.0f), FLinearColor(0.08f, 0.12f, 0.20f, 0.85f));
     DrawText(FormatVitalsLine(Snapshot), FLinearColor(0.84f, 1.0f, 0.86f, 1.0f), Left + 18.0f, Top + 108.0f);
 
-    for (int32 Index = 0; Index < PresentationModel.PartyFrames.Num(); ++Index)
+    const int32 VisiblePartyFrameCount = FMath::Min(PresentationModel.PartyFrames.Num(), AEOHUD::MaxVisiblePartyFrames);
+    for (int32 Index = 0; Index < VisiblePartyFrameCount; ++Index)
     {
         DrawUnitFrame(this, PresentationModel.PartyFrames[Index], Left, Top + 148.0f + static_cast<float>(Index) * 48.0f, 230.0f);
     }
@@ -123,7 +129,8 @@ void AEOHUD::DrawHUD()
 
     DrawPanel(this, 28.0f, ViewH - 196.0f, 388.0f, 92.0f, FLinearColor(0.012f, 0.012f, 0.018f, 0.72f), FLinearColor(0.50f, 0.58f, 0.72f, 0.9f));
     DrawText(TEXT("EVENT FEED"), FLinearColor(0.82f, 0.94f, 1.0f, 1.0f), 46.0f, ViewH - 180.0f);
-    for (int32 Index = 0; Index < PresentationModel.FeedEntries.Num(); ++Index)
+    const int32 VisibleFeedEntryCount = FMath::Min(PresentationModel.FeedEntries.Num(), AEOHUD::MaxVisibleFeedEntries);
+    for (int32 Index = 0; Index < VisibleFeedEntryCount; ++Index)
     {
         const FEOHUDEventFeedEntry& Entry = PresentationModel.FeedEntries[Index];
         DrawText(Entry.Message.ToString(), Entry.Color, 46.0f, ViewH - 158.0f + static_cast<float>(Index) * 20.0f);
@@ -131,9 +138,16 @@ void AEOHUD::DrawHUD()
 
     DrawPanel(this, 28.0f, ViewH - 82.0f, 710.0f, 54.0f, FLinearColor(0.012f, 0.012f, 0.018f, 0.76f), FLinearColor(0.50f, 0.58f, 0.72f, 0.9f));
     FString ActionLine = TEXT("Actions:");
-    for (const FEOHUDActionSlot& ActionSlotSpec : PresentationModel.ActionSlots)
+    const int32 VisibleActionSlotCount = FMath::Min(PresentationModel.ActionSlots.Num(), AEOHUD::MaxVisibleActionSlots);
+    for (int32 Index = 0; Index < VisibleActionSlotCount; ++Index)
     {
+        const FEOHUDActionSlot& ActionSlotSpec = PresentationModel.ActionSlots[Index];
         ActionLine += FString::Printf(TEXT("  %s %s/%s"), *ActionSlotSpec.DisplayName.ToString(), *ActionSlotSpec.KeyboardGlyph, *ActionSlotSpec.ControllerGlyph);
+    }
+    const int32 RemainingActionSlotCount = PresentationModel.ActionSlots.Num() - VisibleActionSlotCount;
+    if (RemainingActionSlotCount > 0)
+    {
+        ActionLine += FString::Printf(TEXT("  +%d more"), RemainingActionSlotCount);
     }
     DrawText(ActionLine, FLinearColor(1.0f, 0.92f, 0.65f, 1.0f), 46.0f, ViewH - 64.0f);
 }
@@ -181,7 +195,7 @@ FEOHUDSnapshot AEOHUD::BuildSnapshot(const AEOHeroCharacter* Hero)
 
 FEOHUDPresentationModel AEOHUD::BuildPresentationModel(const FEOHUDSnapshot& Snapshot)
 {
-    FEOHUDPresentationModel Model = FEOHUDPresentationModel::BuildAlphaFixture();
+    FEOHUDPresentationModel Model = GetCachedAlphaPresentationFixture();
     Model.PlayerFrame.Health = Snapshot.Health;
     Model.PlayerFrame.MaxHealth = Snapshot.MaxHealth;
     Model.QuestObjective = FText::FromString(FormatObjectiveLine(Snapshot));

@@ -71,6 +71,10 @@ class EVERWILDODYSSEY_API AEOHUD : public AHUD
     GENERATED_BODY()
 
 public:
+    static constexpr int32 MaxVisiblePartyFrames = 3;
+    static constexpr int32 MaxVisibleFeedEntries = 3;
+    static constexpr int32 MaxVisibleActionSlots = 8;
+
     virtual void DrawHUD() override;
 
     static FEOHUDSnapshot BuildSnapshot(const AEOHeroCharacter* Hero);
