@@ -35,7 +35,6 @@ public:
     UEOEncounterDirectorComponent* GetEncounterDirectorComponent() const { return EncounterDirector; }
 
 #if WITH_DEV_AUTOMATION_TESTS
-    void GenerateRuntimeWorldForTesting();
     const TArray<TObjectPtr<UStaticMeshComponent>>& GetRuntimeWorldMeshesForTesting() const { return RuntimeWorldMeshes; }
     const TArray<TObjectPtr<UPointLightComponent>>& GetRuntimeWorldLightsForTesting() const { return RuntimeWorldLights; }
     const TArray<TObjectPtr<UStaticMeshComponent>>& GetRuntimeWorldMarkerMeshesForTesting() const { return RuntimeWorldMarkerMeshes; }

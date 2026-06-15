@@ -2,10 +2,77 @@
 
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/Engine.h"
+#include "Engine/World.h"
 #include "Gameplay/EOAlphaWorldScaffold.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/AutomationTest.h"
 #include "Presentation/EOAssetRoleTypes.h"
 #include "World/EOZoneProfile.h"
+
+namespace
+{
+bool AreColorsNearlyEqual(const FLinearColor& A, const FLinearColor& B)
+{
+    constexpr float Tolerance = 0.001f;
+    return FMath::IsNearlyEqual(A.R, B.R, Tolerance)
+        && FMath::IsNearlyEqual(A.G, B.G, Tolerance)
+        && FMath::IsNearlyEqual(A.B, B.B, Tolerance)
+        && FMath::IsNearlyEqual(A.A, B.A, Tolerance);
+}
+
+UWorld* CreateRuntimeScaffoldTestWorld()
+{
+    if (GEngine == nullptr)
+    {
+        return nullptr;
+    }
+
+    const FName WorldName = MakeUniqueObjectName(nullptr, UWorld::StaticClass(), TEXT("EOAlphaWorldScaffoldTestWorld"), EUniqueObjectNameOptions::GloballyUnique);
+    UWorld* TestWorld = UWorld::CreateWorld(EWorldType::Game, false, WorldName, GetTransientPackage());
+    if (TestWorld == nullptr)
+    {
+        return nullptr;
+    }
+
+    FWorldContext& WorldContext = GEngine->CreateNewWorldContext(EWorldType::Game);
+    TestWorld->AddToRoot();
+    WorldContext.SetCurrentWorld(TestWorld);
+    TestWorld->InitializeActorsForPlay(FURL());
+    return TestWorld;
+}
+
+void DestroyRuntimeScaffoldTestWorld(UWorld* TestWorld)
+{
+    if (TestWorld == nullptr)
+    {
+        return;
+    }
+
+    TestWorld->RemoveFromRoot();
+    if (GEngine != nullptr)
+    {
+        GEngine->DestroyWorldContext(TestWorld);
+    }
+    TestWorld->DestroyWorld(false);
+}
+
+const UStaticMeshComponent* FindRuntimeMeshWithTags(const TArray<TObjectPtr<UStaticMeshComponent>>& RuntimeMeshes, FName SpecId, FName AssetRoleId)
+{
+    for (const TObjectPtr<UStaticMeshComponent>& RuntimeMesh : RuntimeMeshes)
+    {
+        const UStaticMeshComponent* MeshComponent = RuntimeMesh.Get();
+        if (MeshComponent != nullptr
+            && MeshComponent->ComponentTags.Contains(SpecId)
+            && MeshComponent->ComponentTags.Contains(AssetRoleId))
+        {
+            return MeshComponent;
+        }
+    }
+
+    return nullptr;
+}
+}
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEOAlphaWorldScaffoldTest, "EverwildOdyssey.Gameplay.AlphaWorldScaffold", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 
@@ -73,15 +140,25 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FEOAlphaWorldScaffoldRuntimeGenerationTest, "Ev
 bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Parameters)
 {
     const FEOZoneProfile Profile = FEOZoneProfileCatalog::BuildStarfallValeProfile();
-    AEOAlphaWorldScaffold* Scaffold = NewObject<AEOAlphaWorldScaffold>();
-    TestNotNull(TEXT("Runtime scaffold actor can be constructed."), Scaffold);
+    UWorld* TestWorld = CreateRuntimeScaffoldTestWorld();
+    TestNotNull(TEXT("Runtime scaffold test world can be created."), TestWorld);
+
+    AEOAlphaWorldScaffold* Scaffold = nullptr;
+    if (TestWorld != nullptr)
+    {
+        Scaffold = TestWorld->SpawnActor<AEOAlphaWorldScaffold>();
+    }
+
+    TestNotNull(TEXT("Runtime scaffold actor can be spawned."), Scaffold);
 
     if (Scaffold == nullptr)
     {
+        DestroyRuntimeScaffoldTestWorld(TestWorld);
         return false;
     }
 
-    Scaffold->GenerateRuntimeWorldForTesting();
+    Scaffold->DispatchBeginPlay();
+    TestTrue(TEXT("Runtime scaffold actor follows BeginPlay lifecycle."), Scaffold->HasActorBegunPlay());
 
     const TArray<TObjectPtr<UStaticMeshComponent>>& RuntimeMeshes = Scaffold->GetRuntimeWorldMeshesForTesting();
     const TArray<TObjectPtr<UPointLightComponent>>& RuntimeLights = Scaffold->GetRuntimeWorldLightsForTesting();
@@ -93,18 +170,7 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
 
     auto RuntimeMeshHasTags = [&RuntimeMeshes](FName SpecId, FName AssetRoleId)
     {
-        for (const TObjectPtr<UStaticMeshComponent>& RuntimeMesh : RuntimeMeshes)
-        {
-            const UStaticMeshComponent* MeshComponent = RuntimeMesh.Get();
-            if (MeshComponent != nullptr
-                && MeshComponent->ComponentTags.Contains(SpecId)
-                && MeshComponent->ComponentTags.Contains(AssetRoleId))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return FindRuntimeMeshWithTags(RuntimeMeshes, SpecId, AssetRoleId) != nullptr;
     };
 
     bool bFoundBlockingLandmark = false;
@@ -127,6 +193,10 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
         const bool bIsScenic = ComponentName.StartsWith(TEXT("Scenic_"));
         const ECollisionEnabled::Type CollisionEnabled = MeshComponent->GetCollisionEnabled();
 
+        TestTrue(TEXT("Runtime mesh component is registered."), MeshComponent->IsRegistered());
+        TestTrue(TEXT("Runtime mesh component is owned by scaffold."), MeshComponent->GetOwner() == Scaffold);
+        TestTrue(TEXT("Runtime mesh component is attached to scaffold root."), MeshComponent->GetAttachParent() == Scaffold->GetRootComponent());
+
         bFoundBlockingLandmark |= bIsLandmark && CollisionEnabled == ECollisionEnabled::QueryAndPhysics;
         bFoundBlockingScenic |= bIsScenic && CollisionEnabled == ECollisionEnabled::QueryAndPhysics;
         bFoundNonBlockingScenic |= bIsScenic && CollisionEnabled == ECollisionEnabled::NoCollision;
@@ -147,6 +217,34 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
         FEOAssetRoleDefinition AssetRole;
         TestTrue(TEXT("Each runtime scenic prop references a valid asset role."), FEOAssetRoleCatalog::TryGetRoleDefinition(ScenicProp.AssetRoleId, AssetRole));
         TestTrue(TEXT("Each runtime scenic mesh is tagged with spec and role ids."), RuntimeMeshHasTags(ScenicProp.Id, ScenicProp.AssetRoleId));
+    }
+
+    const FEOZoneVisualSpec* ProfileTintVisual = Profile.Landmarks.FindByPredicate([](const FEOZoneVisualSpec& VisualSpec)
+    {
+        return VisualSpec.Id == TEXT("landmark.dawnwatch.gate");
+    });
+    TestNotNull(TEXT("Profile tint assertion target exists."), ProfileTintVisual);
+
+    if (ProfileTintVisual != nullptr)
+    {
+        FEOAssetRoleDefinition AssetRole;
+        const bool bRoleFound = FEOAssetRoleCatalog::TryGetRoleDefinition(ProfileTintVisual->AssetRoleId, AssetRole);
+        TestTrue(TEXT("Profile tint assertion target role resolves."), bRoleFound);
+
+        const UStaticMeshComponent* ProfileTintMesh = FindRuntimeMeshWithTags(RuntimeMeshes, ProfileTintVisual->Id, ProfileTintVisual->AssetRoleId);
+        TestNotNull(TEXT("Profile tint assertion target mesh exists."), ProfileTintMesh);
+
+        if (ProfileTintMesh != nullptr && bRoleFound)
+        {
+            UMaterialInstanceDynamic* DynamicMaterial = Cast<UMaterialInstanceDynamic>(ProfileTintMesh->GetMaterial(0));
+            TestNotNull(TEXT("Profile-tinted mesh uses dynamic material."), DynamicMaterial);
+            if (DynamicMaterial != nullptr)
+            {
+                const FLinearColor RuntimeTint = DynamicMaterial->K2_GetVectorParameterValue(TEXT("Color"));
+                TestTrue(TEXT("Runtime mesh color uses profile tint."), AreColorsNearlyEqual(RuntimeTint, ProfileTintVisual->Tint));
+                TestFalse(TEXT("Runtime mesh color is not overridden by role debug tint."), AreColorsNearlyEqual(RuntimeTint, AssetRole.DebugTint));
+            }
+        }
     }
 
     for (const FEOMinimapMarkerSpec& Marker : Profile.MinimapMarkers)
@@ -173,6 +271,7 @@ bool FEOAlphaWorldScaffoldRuntimeGenerationTest::RunTest(const FString& Paramete
     TestTrue(TEXT("Runtime world tags generated road lamp role."), bFoundRoadLampRole);
     TestTrue(TEXT("Runtime world tags generated tree role."), bFoundTreeRole);
 
+    DestroyRuntimeScaffoldTestWorld(TestWorld);
     return true;
 }
 

@@ -25,15 +25,20 @@ UMaterialInstanceDynamic* BuildTintedMaterial(UMaterialInterface* BaseMaterial, 
     return TintedMaterial;
 }
 
-FLinearColor DebugTintForRole(FName AssetRoleId, const FLinearColor& FallbackTint)
+FLinearColor ResolveProfileTint(FName AssetRoleId, const FLinearColor& ProfileTint)
 {
+    if (ProfileTint.A > 0.0f)
+    {
+        return ProfileTint;
+    }
+
     FEOAssetRoleDefinition AssetRole;
     if (FEOAssetRoleCatalog::TryGetRoleDefinition(AssetRoleId, AssetRole))
     {
         return AssetRole.DebugTint;
     }
 
-    return FallbackTint;
+    return FLinearColor::White;
 }
 
 UStaticMesh* ProxyMeshForRole(FName AssetRoleId, UStaticMesh* CubeMesh, UStaticMesh* ConeMesh, UStaticMesh* CylinderMesh, UStaticMesh* SphereMesh)
@@ -195,7 +200,7 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
             VisualSpec.Location,
             VisualSpec.Rotation,
             VisualSpec.Scale,
-            DebugTintForRole(VisualSpec.AssetRoleId, VisualSpec.Tint),
+            ResolveProfileTint(VisualSpec.AssetRoleId, VisualSpec.Tint),
             true,
             true,
             VisualSpec.Id,
@@ -231,7 +236,7 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
             Location,
             VisualSpec.Rotation,
             Scale,
-            DebugTintForRole(VisualSpec.AssetRoleId, VisualSpec.Tint),
+            ResolveProfileTint(VisualSpec.AssetRoleId, VisualSpec.Tint),
             VisualSpec.bBlocksMovement,
             bApplyTint,
             VisualSpec.Id,
@@ -256,13 +261,6 @@ void AEOAlphaWorldScaffold::SpawnVerticalSliceWorld()
         CreateMarkerMesh(MarkerSpec, CylinderMesh);
     }
 }
-
-#if WITH_DEV_AUTOMATION_TESTS
-void AEOAlphaWorldScaffold::GenerateRuntimeWorldForTesting()
-{
-    SpawnVerticalSliceWorld();
-}
-#endif
 
 int32 AEOAlphaWorldScaffold::ExpectedLandmarkCount()
 {
